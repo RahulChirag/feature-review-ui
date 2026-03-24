@@ -863,3 +863,301 @@ body {
   font-size: 12.5px;
   color: var(--accent);
 }
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 1100px) {
+  .feature-header {
+    padding: 16px 20px 0;
+  }
+
+  .tab-content {
+    padding: 20px;
+  }
+
+  .doc-viewer {
+    padding: 24px 24px;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-height: 38vh;
+    border-right: none;
+    border-bottom: 1px solid var(--sb-border);
+  }
+
+  .sidebar-header {
+    padding: 12px 14px;
+  }
+
+  .sidebar-nav {
+    padding: 8px;
+  }
+
+  .sidebar-footer {
+    padding: 10px 14px;
+  }
+
+  .feature-header {
+    padding: 14px 14px 0;
+  }
+
+  .feature-meta-row {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .feature-title {
+    font-size: 19px;
+  }
+
+  .tab-bar {
+    overflow-x: auto;
+    gap: 2px;
+    scrollbar-width: thin;
+  }
+
+  .tab-btn {
+    padding: 10px 10px;
+    font-size: 12.5px;
+    flex-shrink: 0;
+  }
+
+  .tab-content {
+    padding: 12px;
+  }
+
+  .doc-viewer {
+    padding: 16px 14px;
+  }
+
+  .doc-viewer h1 {
+    font-size: 21px;
+  }
+
+  .doc-viewer h2 {
+    font-size: 17px;
+    margin-top: 26px;
+  }
+
+  .doc-viewer p,
+  .doc-viewer li {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px 10px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .section-header {
+    padding: 12px 14px;
+  }
+
+  .entry-item,
+  .api-item,
+  .db-item {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .file-grid {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .fn-group-header {
+    padding: 10px 14px;
+  }
+
+  .fn-item {
+    padding: 6px 14px 6px 30px;
+  }
+
+  .file-chip-dir {
+    max-width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    max-height: 34vh;
+  }
+
+  .sidebar-title {
+    font-size: 13px;
+  }
+
+  .nav-label-text {
+    font-size: 12px;
+  }
+
+  .feature-title {
+    font-size: 17px;
+  }
+
+  .feature-date-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .tab-btn {
+    font-size: 12px;
+    padding: 9px 8px;
+  }
+
+  .doc-viewer {
+    padding: 14px 12px;
+  }
+
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .file-chip {
+    width: 100%;
+  }
+
+  .file-chip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 360px) {
+  .sidebar {
+    max-height: 32vh;
+  }
+
+  .sidebar-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .sidebar-logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .feature-header {
+    padding: 10px 10px 0;
+  }
+
+  .feature-meta-row {
+    margin-bottom: 8px;
+  }
+
+  .feature-title {
+    font-size: 16px;
+  }
+
+  .tab-content {
+    padding: 10px;
+  }
+
+  .tab-btn {
+    font-size: 11.5px;
+    padding: 8px 7px;
+    gap: 4px;
+  }
+
+  .tab-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .tab-badge {
+    min-width: 18px;
+    height: 16px;
+    font-size: 10px;
+    padding: 0 4px;
+  }
+
+  .doc-viewer {
+    padding: 12px 10px;
+  }
+
+  .doc-viewer h1 {
+    font-size: 19px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+
+  .doc-viewer h2 {
+    font-size: 15px;
+    margin: 20px 0 8px;
+  }
+
+  .section-header {
+    padding: 10px 12px;
+  }
+
+  .section-title {
+    font-size: 12.5px;
+    gap: 6px;
+  }
+
+  .entry-item,
+  .api-item,
+  .db-item {
+    padding: 8px 12px;
+  }
+
+  .entry-method,
+  .api-path,
+  .fn-name {
+    font-size: 12px;
+  }
+
+  .file-grid {
+    padding: 8px 10px;
+  }
+
+  .file-chip {
+    padding: 4px 8px;
+    gap: 5px;
+  }
+
+  .file-chip-name {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .file-chip-dir {
+    max-width: 90px;
+  }
+
+  .fn-group-header {
+    padding: 8px 12px;
+  }
+
+  .fn-item {
+    padding: 5px 12px 5px 24px;
+  }
+}
