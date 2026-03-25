@@ -1,0 +1,95 @@
+{
+  "feature": "oids-group_oids-resolution",
+  "generated_date": "2026-03-25",
+  "files_involved": [
+    "backend/app/services/file_processing_worker_service.py",
+    "backend/app/services/acl_resolution_service.py",
+    "backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "backend/app/services/document_fetchers/sharepoint_document_fetcher.py",
+    "backend/app/services/document_fetchers/base_document_fetcher.py",
+    "backend/app/services/edms_site_service.py",
+    "backend/app/scheduler/tasks.py",
+    "backend/app/services/edms_document_service.py",
+    "backend/app/models/inbound_int_role_mapping.py",
+    "backend/app/services/role_mapping_service.py",
+    "backend/app/prepdocslib/searchmanager.py",
+    "backend/app/schemas/document_metadata.py",
+    "backend/app/services/search_metadata_manager.py",
+    "frontend/src/pages/SharePointManagement/SharePoint_Instance/components/SiteFormModal.jsx",
+    "frontend/src/pages/SharePointManagement/File_Queue/components/ViewAccessModal.jsx",
+    "frontend/src/services/edmsService.js"
+  ],
+  "entry_points": [
+    "backend/app/services/file_processing_worker_service.py -> _build_index_metadata() (line 1482)",
+    "backend/app/services/edms_site_service.py -> create_site() (line 266)",
+    "backend/app/services/edms_site_service.py -> update_site() (line 560)",
+    "frontend/src/pages/SharePointManagement/SharePoint_Instance/components/SiteFormModal.jsx -> handleSubmit() (line 987)"
+  ],
+  "apis_used": [
+    "External: Microsoft Graph API GET /v1.0/users/{upn} (resolve email to OID)",
+    "External: Microsoft Graph API GET /v1.0/groups?$filter=displayName eq '...' (resolve group name to OID)",
+    "External: Microsoft Graph API GET /v1.0/sites/{siteId}/permissions (SharePoint group auto-fetch)",
+    "External: Revver API GET /api/NodePermissions/NodeId/{id} (node permissions)",
+    "External: Revver API GET /api/Role/Account/{accountId} (account roles)",
+    "POST /edms-sites/create-site",
+    "POST /edms-sites/update-site/{siteId}"
+  ],
+  "db_operations": [
+    "InboundIntRoleMapping SELECT by source_role_id in acl_resolution_service.py:resolve_group_to_oid()",
+    "InboundIntRoleMapping SELECT by source_role_name in acl_resolution_service.py:resolve_group_to_oid()",
+    "EDMSSite.source_config JSON field read/write in edms_site_service.py:create_site()",
+    "EDMSSite.source_config JSON field read/write in edms_site_service.py:update_site()",
+    "EDMSSite.groups JSON field merge in edms_site_service.py:update_site()"
+  ],
+  "functions_traced": [
+    "_build_index_metadata() in backend/app/services/file_processing_worker_service.py",
+    "resolve_acls() in backend/app/services/acl_resolution_service.py",
+    "resolve_user_email_to_oid() in backend/app/services/acl_resolution_service.py",
+    "resolve_group_to_oid() in backend/app/services/acl_resolution_service.py",
+    "_extract_role_type() in backend/app/services/acl_resolution_service.py",
+    "_extract_user_email() in backend/app/services/acl_resolution_service.py",
+    "_extract_group_name() in backend/app/services/acl_resolution_service.py",
+    "create_site() in backend/app/services/edms_site_service.py",
+    "update_site() in backend/app/services/edms_site_service.py",
+    "resolve_groups_to_oids() in backend/app/scheduler/tasks.py",
+    "resolve_owner_to_oid() in backend/app/scheduler/tasks.py",
+    "enrich_site_metadata() in backend/app/scheduler/tasks.py",
+    "_get_node_permissions() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "get_sharepoint_site_groups() in backend/app/services/edms_document_service.py",
+    "create_sections() in backend/app/prepdocslib/searchmanager.py",
+    "_update_index_metadata_only() in backend/app/services/file_processing_worker_service.py",
+    "_node_to_document() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "handleSubmit() in frontend/src/pages/SharePointManagement/SharePoint_Instance/components/SiteFormModal.jsx"
+  ],
+  "root_causes_identified": [
+    {
+      "id": 1,
+      "description": "Revver created_by structure is {\"email\": \"...\"} but worker code expects {\"user\": {\"id\": \"...\"}} -- owner OID extraction always returns None",
+      "file": "backend/app/services/file_processing_worker_service.py",
+      "line": 1578,
+      "affects": "oids"
+    },
+    {
+      "id": 2,
+      "description": "No auto-fetch of group OIDs for Revver sites -- only SharePoint gets get_sharepoint_site_groups() fallback",
+      "file": "backend/app/services/edms_site_service.py",
+      "line": 399,
+      "affects": "group_oids"
+    },
+    {
+      "id": 3,
+      "description": "Fallback #1 for Revver user OID uses wrong key path (created_by.user.email vs actual created_by.email)",
+      "file": "backend/app/services/file_processing_worker_service.py",
+      "line": 1622,
+      "affects": "oids"
+    },
+    {
+      "id": 4,
+      "description": "inbound_int_role_mapping table may lack azure_ad_group_oid for Revver roles (not synced or not mapped by admin)",
+      "file": "backend/app/services/acl_resolution_service.py",
+      "line": 97,
+      "affects": "group_oids"
+    }
+  ],
+  "description": "Traces how oids (user Azure AD OIDs) and group_oids (group Azure AD OIDs) are resolved for Revver vs SharePoint documents, identifying structural key mismatches and missing auto-fetch fallbacks as root causes for Revver's inconsistent ACL resolution."
+}
