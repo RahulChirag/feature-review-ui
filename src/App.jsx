@@ -249,7 +249,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Single scroll body — max-width reading column */}
+            {/* Single scroll body — full width of main column */}
             <div
               className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
               style={
@@ -258,7 +258,7 @@ export default function App() {
                   : undefined
               }
             >
-              <div className="mx-auto w-full max-w-6xl">
+              <div className="min-w-0 w-full">
                 {tab === 'doc' ? <DocViewer content={feature.doc} /> : <MetaViewer meta={feature.meta} />}
               </div>
             </div>

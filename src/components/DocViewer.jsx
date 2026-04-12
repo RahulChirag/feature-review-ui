@@ -5,7 +5,7 @@ import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useTheme } from '../theme/ThemeProvider'
 
-/* Mobile: card has no horizontal padding — prose px-4; tables/code use -mx-4 to bleed to card edge (single gutter from App). */
+/* Full-width column: uniform horizontal padding; prose uses full width of main (no max-w-prose). */
 const mdComponents = {
   h1: ({ children }) => (
     <h1 className="mb-5 border-b-2 border-outline pb-3.5 text-xl font-extrabold tracking-tight text-on-surface max-md:mb-4 md:text-[26px]">
@@ -68,8 +68,7 @@ export default function DocViewer({ content }) {
   const codeFontSize = '15px'
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words border border-outline bg-surface-container px-0 py-6 md:px-8 md:py-8">
-      <div className="mx-auto w-full max-w-prose px-4 text-on-surface md:px-0">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words border border-outline bg-surface-container px-4 py-6 text-on-surface md:px-8 md:py-8 lg:px-10">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -78,7 +77,7 @@ export default function DocViewer({ content }) {
               const match = /language-(\w+)/.exec(className || '')
               if (match) {
                 return (
-                  <div className="my-4 -mx-4 max-w-none overflow-x-auto [-webkit-overflow-scrolling:touch] md:mx-0 md:max-w-full md:overflow-hidden md:border md:border-outline">
+                  <div className="my-4 w-full max-w-none overflow-x-auto border border-outline [-webkit-overflow-scrolling:touch] md:overflow-hidden">
                     <SyntaxHighlighter
                       style={codeStyle}
                       language={match[1]}
@@ -107,7 +106,7 @@ export default function DocViewer({ content }) {
             },
             table({ children }) {
               return (
-                <div className="my-5 -mx-4 max-w-none overflow-x-auto border-y border-outline bg-surface-container [-webkit-overflow-scrolling:touch] md:mx-0 md:my-4 md:border md:border-outline md:bg-transparent">
+                <div className="my-5 w-full max-w-none overflow-x-auto border border-outline bg-surface-container [-webkit-overflow-scrolling:touch] md:my-4 md:bg-transparent">
                   <table className="w-full border-collapse text-[12px] text-on-surface/90 sm:text-[13px]">{children}</table>
                 </div>
               )
@@ -136,7 +135,6 @@ export default function DocViewer({ content }) {
         >
           {content}
         </ReactMarkdown>
-      </div>
     </div>
   )
 }
