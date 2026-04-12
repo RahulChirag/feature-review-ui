@@ -1,8 +1,11 @@
-const mdModules = import.meta.glob('../../feature-reviews/**/*.md', {
+// Markdown: non-eager — each entry is a loader fn, content is not in the bundle
+const mdLoaders = import.meta.glob('../../feature-reviews/**/*.md', {
   query: '?raw',
   import: 'default',
-  eager: true,
+  eager: false,
 })
+
+// Meta JSON: eager — small files, needed immediately for filtering/sorting/headers
 const metaModules = import.meta.glob('../../feature-reviews/**/meta.json', {
   eager: true,
 })
@@ -22,15 +25,17 @@ function compareFeaturesByGeneratedDate(a, b) {
 function buildFeatures() {
   const map = {}
 
-  Object.entries(mdModules).forEach(([path, content]) => {
+  // Register all folders that have a markdown file (no content yet)
+  Object.keys(mdLoaders).forEach((path) => {
     const folder = path.split('/').at(-2)
     if (!map[folder]) map[folder] = { id: folder }
-    map[folder].doc = content
+    map[folder].hasDoc = true
   })
 
+  // Register all folders that have meta.json (with content)
   Object.entries(metaModules).forEach(([path, mod]) => {
     const folder = path.split('/').at(-2)
-    if (!map[folder]) map[folder] = { id: folder }
+    if (!map[folder]) map[folder] = { id: folder, hasDoc: false }
     map[folder].meta = mod.default ?? mod
   })
 
@@ -38,6 +43,27 @@ function buildFeatures() {
 }
 
 export const features = buildFeatures()
+
+/** Cache so revisiting a feature does not re-fetch. */
+const docCache = new Map()
+
+/**
+ * Dynamically loads the raw markdown for a feature by id.
+ * Returns '' if the feature has no markdown file.
+ * Results are cached in memory for the session.
+ */
+export async function loadFeatureDoc(id) {
+  if (docCache.has(id)) return docCache.get(id)
+
+  const loaderEntry = Object.entries(mdLoaders).find(
+    ([path]) => path.split('/').at(-2) === id
+  )
+  if (!loaderEntry) return ''
+
+  const content = await loaderEntry[1]()
+  docCache.set(id, content)
+  return content
+}
 
 export function formatFeatureName(str) {
   return str
@@ -57,7 +83,7 @@ export function parseGeneratedDate(meta) {
 /**
  * Machine + human labels for <time dateTime> and display.
  * @param {unknown} raw — meta.generated_date
- * @returns {{ iso: string, label: string }} iso is YYYY-MM-DD when parseable; label is locale-medium or raw fallback
+ * @returns {{ iso: string, label: string }}
  */
 export function formatGeneratedDateForDisplay(raw) {
   if (raw == null || raw === '') return { iso: '', label: '' }

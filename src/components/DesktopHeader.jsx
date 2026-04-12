@@ -30,6 +30,7 @@ export default function DesktopHeader({
   setDesktopSidebarOpen,
   tab,
   setTab,
+  canDownloadDoc,
   handleDownloadMd,
   handleDownloadMeta,
   prefersReducedMotion,
@@ -78,7 +79,7 @@ export default function DesktopHeader({
             type="button"
             className={chromeDownloadPill}
             onClick={handleDownloadMd}
-            disabled={!feature.doc}
+            disabled={!canDownloadDoc}
             whileHover={!prefersReducedMotion ? hoverChrome : undefined}
             whileTap={tapScale(!!prefersReducedMotion)}
           >

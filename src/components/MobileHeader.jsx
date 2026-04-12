@@ -10,6 +10,7 @@ export default function MobileHeader({
   generatedDisplay,
   drawerOpen,
   setDrawerOpen,
+  canDownloadDoc,
   handleDownloadMd,
   handleDownloadMeta,
   prefersReducedMotion,
@@ -42,7 +43,7 @@ export default function MobileHeader({
             type="button"
             className={`${chromeIconActionSm} shrink-0`}
             onClick={handleDownloadMd}
-            disabled={!feature.doc}
+            disabled={!canDownloadDoc}
             title="Download Markdown"
             whileTap={tapScale(!!prefersReducedMotion)}
           >

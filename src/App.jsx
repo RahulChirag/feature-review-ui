@@ -2,21 +2,22 @@
  * App shell — z-index scale: content 0, header 10, bottomNav 40, scrim 100, drawer 110
  * Docs/Meta: two stacked scroll panels (absolute inset-0) so each tab keeps its own scrollTop.
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import Sidebar from './components/Sidebar'
-import DocViewer from './components/DocViewer'
 import DocOutline from './components/DocOutline'
 import MetaViewer from './components/MetaViewer'
 import MetaOutline from './components/MetaOutline'
 import FeatureNavShell from './components/FeatureNavShell'
 import DesktopHeader from './components/DesktopHeader'
 import MobileHeader from './components/MobileHeader'
+import ContentSkeleton from './components/ContentSkeleton'
 import { DocIcon, EmptyIcon, MetaIcon } from './components/icons'
 import {
   features,
   filterFeatures,
   formatGeneratedDateForDisplay,
+  loadFeatureDoc,
 } from './utils/featureUtils'
 import { downloadTextFile } from './utils/downloadUtils'
 import { chromeCountBadge } from './theme/chromeStyles'
@@ -30,6 +31,9 @@ import {
   transitionScrimFade,
 } from './theme/motionTokens'
 import { focusRingButton, focusRingOnScrim } from './theme/focusStyles'
+
+// Code-split: pulls in react-markdown, rehype-slug, react-syntax-highlighter
+const DocViewer = lazy(() => import('./components/DocViewer'))
 
 const DESKTOP_SIDEBAR_STORAGE_KEY = 'feature-review-ui.desktopSidebarOpen'
 
@@ -54,6 +58,10 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(readStoredDesktopSidebarOpen)
 
+  /** 'idle' | 'loading' | 'ready' | 'error' */
+  const [docStatus, setDocStatus] = useState('idle')
+  const [docContent, setDocContent] = useState(null)
+
   const docScrollRef = useRef(null)
   const metaScrollRef = useRef(null)
   const docMarkdownRootRef = useRef(null)
@@ -62,11 +70,31 @@ export default function App() {
   const isMobile = useMediaQuery('(max-width: 768px)')
   const prefersReducedMotion = useReducedMotion()
 
-  useMobileDrawerSwipe({
-    isMobile,
-    drawerOpen,
-    setDrawerOpen,
-  })
+  useMobileDrawerSwipe({ isMobile, drawerOpen, setDrawerOpen })
+
+  // Load markdown for the active feature on selection
+  useEffect(() => {
+    if (!activeId) return
+
+    setDocContent(null)
+    setDocStatus('loading')
+
+    let cancelled = false
+    loadFeatureDoc(activeId)
+      .then((content) => {
+        if (cancelled) return
+        setDocContent(content || null)
+        setDocStatus('ready')
+      })
+      .catch(() => {
+        if (cancelled) return
+        setDocStatus('error')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeId])
 
   useEffect(() => {
     if (!isMobile) setDrawerOpen(false)
@@ -106,6 +134,9 @@ export default function App() {
     [feature?.meta?.generated_date]
   )
 
+  // True when a doc is ready to download (loaded and non-empty)
+  const canDownloadDoc = docStatus === 'ready' && !!docContent
+
   function selectFeature(id) {
     setActiveId(id)
     setTab('doc')
@@ -113,8 +144,8 @@ export default function App() {
   }
 
   function handleDownloadMd() {
-    if (!feature?.doc) return
-    downloadTextFile(`${feature.id}.md`, feature.doc, 'text/markdown;charset=utf-8')
+    if (!docContent) return
+    downloadTextFile(`${feature.id}.md`, docContent, 'text/markdown;charset=utf-8')
   }
 
   function handleDownloadMeta() {
@@ -156,6 +187,7 @@ export default function App() {
               setDesktopSidebarOpen={setDesktopSidebarOpen}
               tab={tab}
               setTab={setTab}
+              canDownloadDoc={canDownloadDoc}
               handleDownloadMd={handleDownloadMd}
               handleDownloadMeta={handleDownloadMeta}
               prefersReducedMotion={!!prefersReducedMotion}
@@ -167,13 +199,15 @@ export default function App() {
               generatedDisplay={generatedDisplay}
               drawerOpen={drawerOpen}
               setDrawerOpen={setDrawerOpen}
+              canDownloadDoc={canDownloadDoc}
               handleDownloadMd={handleDownloadMd}
               handleDownloadMeta={handleDownloadMeta}
               prefersReducedMotion={!!prefersReducedMotion}
             />
 
-            {/* Stacked scroll panels — instant visibility swap (opacity animation caused overlap/flicker) */}
+            {/* Stacked scroll panels — instant visibility swap */}
             <div className="relative min-h-0 flex-1 overflow-hidden">
+              {/* Doc panel */}
               <div
                 className={`absolute inset-0 flex min-h-0 flex-row overflow-hidden ${
                   tab === 'doc' ? 'z-10' : 'invisible pointer-events-none z-0'
@@ -189,25 +223,38 @@ export default function App() {
                       : undefined
                   }
                 >
-                  <motion.div
-                    key={activeId}
-                    className="min-w-0 w-full"
-                    initial={
-                      prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
-                    }
-                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                    transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
-                  >
-                    <DocViewer ref={docMarkdownRootRef} content={feature.doc} />
-                  </motion.div>
+                  {/* Suspense handles first-load of DocViewer chunk; inner condition handles content fetching */}
+                  <Suspense fallback={<ContentSkeleton />}>
+                    {docStatus === 'loading' ? (
+                      <ContentSkeleton />
+                    ) : docStatus === 'error' ? (
+                      <div className="px-4 py-6 text-sm text-on-surface-muted md:px-8 md:py-8">
+                        Failed to load documentation.
+                      </div>
+                    ) : (
+                      <motion.div
+                        key={activeId}
+                        className="min-w-0 w-full"
+                        initial={
+                          prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
+                        }
+                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                        transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
+                      >
+                        <DocViewer ref={docMarkdownRootRef} content={docContent} />
+                      </motion.div>
+                    )}
+                  </Suspense>
                 </div>
                 <DocOutline
                   scrollContainerRef={docScrollRef}
                   markdownRootRef={docMarkdownRootRef}
-                  scanKey={`${activeId}-${feature.doc?.length ?? 0}`}
+                  scanKey={`${activeId}-${docContent?.length ?? 0}`}
                   prefersReducedMotion={!!prefersReducedMotion}
                 />
               </div>
+
+              {/* Meta panel */}
               <div
                 className={`absolute inset-0 flex min-h-0 flex-row overflow-hidden ${
                   tab === 'meta' ? 'z-10' : 'invisible pointer-events-none z-0'
