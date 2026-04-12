@@ -103,17 +103,24 @@
 
 @layer base {
   html {
+    min-height: 100dvh;
     height: 100%;
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
+    background-color: var(--app-surface);
   }
   body {
+    min-height: 100dvh;
     height: 100%;
     overflow: hidden;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     background-color: var(--app-surface);
     color: var(--app-on-surface);
+  }
+  #root {
+    min-height: 100dvh;
+    background-color: var(--app-surface);
   }
   @media (prefers-reduced-motion: reduce) {
     *,

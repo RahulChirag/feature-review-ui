@@ -1,8 +1,8 @@
 /**
  * App shell — z-index scale: content 0, header 10, bottomNav 40, scrim 100, drawer 110
- * Single scroll owner: main > scrollBody (flex-1 min-h-0 overflow-y-auto)
+ * Docs/Meta: two stacked scroll panels (absolute inset-0) so each tab keeps its own scrollTop.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import DocViewer from './components/DocViewer'
 import MetaViewer from './components/MetaViewer'
@@ -87,6 +87,9 @@ export default function App() {
   const [featureQuery, setFeatureQuery] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
 
+  const docScrollRef = useRef(null)
+  const metaScrollRef = useRef(null)
+
   const isMobile = useMediaQuery('(max-width: 768px)')
 
   useEffect(() => {
@@ -101,6 +104,14 @@ export default function App() {
       document.body.style.overflow = prev
     }
   }, [drawerOpen, isMobile])
+
+  useEffect(() => {
+    if (!activeId) return
+    const d = docScrollRef.current
+    const m = metaScrollRef.current
+    if (d) d.scrollTop = 0
+    if (m) m.scrollTop = 0
+  }, [activeId])
 
   const filteredFeatures = useMemo(() => filterFeatures(features, featureQuery), [featureQuery])
 
@@ -143,10 +154,7 @@ export default function App() {
     }`
 
   return (
-    <div
-      className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-    >
+    <div className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
       <Sidebar
         features={filteredFeatures}
         totalCount={features.length}
@@ -249,17 +257,39 @@ export default function App() {
               </div>
             </div>
 
-            {/* Single scroll body — full width of main column */}
-            <div
-              className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
-              style={
-                isMobile
-                  ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
-                  : undefined
-              }
-            >
-              <div className="min-w-0 w-full">
-                {tab === 'doc' ? <DocViewer content={feature.doc} /> : <MetaViewer meta={feature.meta} />}
+            {/* Stacked scroll panels — each tab keeps its own scroll position */}
+            <div className="relative min-h-0 flex-1 overflow-hidden">
+              <div
+                ref={docScrollRef}
+                className={`absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
+                  tab === 'doc' ? 'z-10' : 'invisible pointer-events-none z-0'
+                }`}
+                style={
+                  isMobile
+                    ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
+                    : undefined
+                }
+                aria-hidden={tab !== 'doc'}
+              >
+                <div className="min-w-0 w-full">
+                  <DocViewer content={feature.doc} />
+                </div>
+              </div>
+              <div
+                ref={metaScrollRef}
+                className={`absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
+                  tab === 'meta' ? 'z-10' : 'invisible pointer-events-none z-0'
+                }`}
+                style={
+                  isMobile
+                    ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
+                    : undefined
+                }
+                aria-hidden={tab !== 'meta'}
+              >
+                <div className="min-w-0 w-full">
+                  <MetaViewer meta={feature.meta} />
+                </div>
               </div>
             </div>
 
@@ -307,11 +337,7 @@ export default function App() {
           />
           <div
             id="feature-drawer"
-            className="fixed inset-y-0 left-0 z-[110] flex w-[min(20rem,85vw)] flex-col overflow-hidden border-r border-outline bg-surface-container shadow-[var(--shadow-elevation-2)]"
-            style={{
-              paddingTop: 'env(safe-area-inset-top)',
-              paddingBottom: 'env(safe-area-inset-bottom)',
-            }}
+            className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="drawer-title"
