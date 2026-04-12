@@ -11,8 +11,8 @@ import {
 } from '../theme/chromeStyles'
 import { tapScale } from '../theme/motionTokens'
 import { focusRingButton, focusRingInput } from '../theme/focusStyles'
-import { formatFeatureName } from '../featureUtils'
-import { APP_DISPLAY_VERSION } from '../appVersion'
+import { formatFeatureName } from '../utils/featureUtils'
+import { APP_DISPLAY_VERSION } from '../utils/appVersion'
 
 const FOOTER_HINT = 'Drop folders into feature-reviews/ to add more'
 
@@ -96,7 +96,7 @@ export default function FeatureNavShell({
       )}
 
       <div className="shrink-0 border-b border-outline px-3 py-3">
-        <ThemeToggle variant="compact" className="w-full" />
+        <ThemeToggle className="w-full" />
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-2 pt-2">

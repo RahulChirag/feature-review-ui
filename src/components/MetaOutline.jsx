@@ -1,16 +1,15 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useState } from 'react'
 import { focusRingButton } from '../theme/focusStyles'
+import { useScrollSpy } from '../hooks/useScrollSpy'
 
 const SECTION_SEL = '[data-meta-section]'
 
 /**
- * Right rail for metadata tab — mirrors [`DocOutline`](./DocOutline.jsx) for section blocks.
+ * Right rail for metadata tab — mirrors DocOutline for section blocks.
  */
 export default function MetaOutline({ scrollContainerRef, metaRootRef, scanKey, prefersReducedMotion }) {
   const [items, setItems] = useState(() => [])
-  const [activeId, setActiveId] = useState(null)
   const [railOpen, setRailOpen] = useState(false)
-  const rafScroll = useRef(0)
 
   useLayoutEffect(() => {
     const root = metaRootRef?.current
@@ -28,51 +27,9 @@ export default function MetaOutline({ scrollContainerRef, metaRootRef, scanKey, 
       next.push({ id, depth: 1, text })
     })
     setItems(next)
-    setActiveId(next[0]?.id ?? null)
   }, [metaRootRef, scanKey])
 
-  const updateActiveFromScroll = useCallback(() => {
-    const root = scrollContainerRef?.current
-    if (!root || items.length === 0) return
-
-    const rootTop = root.getBoundingClientRect().top
-    const offset = 88
-    let current = items[0].id
-
-    for (const item of items) {
-      const el = document.getElementById(item.id)
-      if (!el) continue
-      const top = el.getBoundingClientRect().top
-      if (top <= rootTop + offset) {
-        current = item.id
-      }
-    }
-    setActiveId((prev) => (prev === current ? prev : current))
-  }, [scrollContainerRef, items])
-
-  useEffect(() => {
-    const root = scrollContainerRef?.current
-    if (!root || items.length === 0) return
-
-    const onScroll = () => {
-      if (rafScroll.current) cancelAnimationFrame(rafScroll.current)
-      rafScroll.current = requestAnimationFrame(() => {
-        rafScroll.current = 0
-        updateActiveFromScroll()
-      })
-    }
-
-    updateActiveFromScroll()
-    root.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      root.removeEventListener('scroll', onScroll)
-      if (rafScroll.current) cancelAnimationFrame(rafScroll.current)
-    }
-  }, [scrollContainerRef, items, updateActiveFromScroll])
-
-  useEffect(() => {
-    updateActiveFromScroll()
-  }, [items, updateActiveFromScroll])
+  const { activeId } = useScrollSpy({ items, scrollContainerRef })
 
   const scrollToId = useCallback(
     (id) => {

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useState } from 'react'
 import { focusRingButton } from '../theme/focusStyles'
+import { useScrollSpy } from '../hooks/useScrollSpy'
 
 const HEADING_SEL = 'h1, h2, h3, h4, h5, h6'
 
@@ -30,9 +31,7 @@ function markerDot(isActive) {
  */
 export default function DocOutline({ scrollContainerRef, markdownRootRef, scanKey, prefersReducedMotion }) {
   const [items, setItems] = useState(() => [])
-  const [activeId, setActiveId] = useState(null)
   const [railOpen, setRailOpen] = useState(false)
-  const rafScroll = useRef(0)
 
   useLayoutEffect(() => {
     const root = markdownRootRef?.current
@@ -54,51 +53,9 @@ export default function DocOutline({ scrollContainerRef, markdownRootRef, scanKe
       })
     })
     setItems(next)
-    setActiveId(next[0]?.id ?? null)
   }, [markdownRootRef, scanKey])
 
-  const updateActiveFromScroll = useCallback(() => {
-    const root = scrollContainerRef?.current
-    if (!root || items.length === 0) return
-
-    const rootTop = root.getBoundingClientRect().top
-    const offset = 88
-    let current = items[0].id
-
-    for (const item of items) {
-      const el = document.getElementById(item.id)
-      if (!el) continue
-      const top = el.getBoundingClientRect().top
-      if (top <= rootTop + offset) {
-        current = item.id
-      }
-    }
-    setActiveId((prev) => (prev === current ? prev : current))
-  }, [scrollContainerRef, items])
-
-  useEffect(() => {
-    const root = scrollContainerRef?.current
-    if (!root || items.length === 0) return
-
-    const onScroll = () => {
-      if (rafScroll.current) cancelAnimationFrame(rafScroll.current)
-      rafScroll.current = requestAnimationFrame(() => {
-        rafScroll.current = 0
-        updateActiveFromScroll()
-      })
-    }
-
-    updateActiveFromScroll()
-    root.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      root.removeEventListener('scroll', onScroll)
-      if (rafScroll.current) cancelAnimationFrame(rafScroll.current)
-    }
-  }, [scrollContainerRef, items, updateActiveFromScroll])
-
-  useEffect(() => {
-    updateActiveFromScroll()
-  }, [items, updateActiveFromScroll])
+  const { activeId } = useScrollSpy({ items, scrollContainerRef })
 
   const scrollToId = useCallback(
     (id) => {
@@ -113,7 +70,6 @@ export default function DocOutline({ scrollContainerRef, markdownRootRef, scanKe
   )
 
   const transitionClass = prefersReducedMotion ? '' : 'transition-[width] duration-200 ease-out'
-
   const minDepth = items.length ? Math.min(...items.map((i) => i.depth)) : 1
 
   if (items.length === 0) {

@@ -1,3 +1,44 @@
+const mdModules = import.meta.glob('../../feature-reviews/**/*.md', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+})
+const metaModules = import.meta.glob('../../feature-reviews/**/meta.json', {
+  eager: true,
+})
+
+function compareFeaturesByGeneratedDate(a, b) {
+  const ta = parseGeneratedDate(a.meta)
+  const tb = parseGeneratedDate(b.meta)
+  if (ta !== null && tb !== null) {
+    if (tb !== ta) return tb - ta
+    return a.id.localeCompare(b.id)
+  }
+  if (ta !== null && tb === null) return -1
+  if (ta === null && tb !== null) return 1
+  return a.id.localeCompare(b.id)
+}
+
+function buildFeatures() {
+  const map = {}
+
+  Object.entries(mdModules).forEach(([path, content]) => {
+    const folder = path.split('/').at(-2)
+    if (!map[folder]) map[folder] = { id: folder }
+    map[folder].doc = content
+  })
+
+  Object.entries(metaModules).forEach(([path, mod]) => {
+    const folder = path.split('/').at(-2)
+    if (!map[folder]) map[folder] = { id: folder }
+    map[folder].meta = mod.default ?? mod
+  })
+
+  return Object.values(map).sort(compareFeaturesByGeneratedDate)
+}
+
+export const features = buildFeatures()
+
 export function formatFeatureName(str) {
   return str
     .split(/[-_]/)
@@ -14,7 +55,7 @@ export function parseGeneratedDate(meta) {
 }
 
 /**
- * Machine + human labels for &lt;time dateTime&gt; and display.
+ * Machine + human labels for <time dateTime> and display.
  * @param {unknown} raw — meta.generated_date
  * @returns {{ iso: string, label: string }} iso is YYYY-MM-DD when parseable; label is locale-medium or raw fallback
  */

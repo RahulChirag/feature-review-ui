@@ -17,9 +17,6 @@ export const transitionDesktopSidebar = {
   ease: [0.22, 1, 0.36, 1],
 }
 
-/** Legacy spring — kept if needed; drawer uses transitionDrawerSlide in App */
-export const transitionDrawerSpring = { type: 'spring', stiffness: 260, damping: 32, mass: 1 }
-
 /** Opacity-only: prefers-reduced-motion */
 export const transitionReducedOpacity = { duration: 0.12, ease: [0.4, 0, 0.2, 1] }
 

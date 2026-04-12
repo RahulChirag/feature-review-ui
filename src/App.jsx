@@ -10,34 +10,31 @@ import DocOutline from './components/DocOutline'
 import MetaViewer from './components/MetaViewer'
 import MetaOutline from './components/MetaOutline'
 import FeatureNavShell from './components/FeatureNavShell'
+import DesktopHeader from './components/DesktopHeader'
+import MobileHeader from './components/MobileHeader'
+import { DocIcon, EmptyIcon, MetaIcon } from './components/icons'
 import {
+  features,
   filterFeatures,
-  formatFeatureName,
   formatGeneratedDateForDisplay,
-  parseGeneratedDate,
-} from './featureUtils'
-import { downloadTextFile } from './downloadUtils'
-import {
-  chromeCountBadge,
-  chromeDownloadPill,
-  chromeIconActionMd,
-  chromeIconActionSm,
-  chromeMetadata,
-  chromeMetadataStrip,
-  chromeMutedHint,
-} from './theme/chromeStyles'
+} from './utils/featureUtils'
+import { downloadTextFile } from './utils/downloadUtils'
+import { chromeCountBadge } from './theme/chromeStyles'
 import { useMobileDrawerSwipe } from './hooks/useMobileDrawerSwipe'
+import { useMediaQuery } from './hooks/useMediaQuery'
 import {
-  hoverChrome,
   tapScale,
   transitionContentEnter,
   transitionReducedOpacity,
   transitionDrawerSlide,
   transitionScrimFade,
-  transitionTitleEnter,
 } from './theme/motionTokens'
+import { focusRingButton, focusRingOnScrim } from './theme/focusStyles'
 
 const DESKTOP_SIDEBAR_STORAGE_KEY = 'feature-review-ui.desktopSidebarOpen'
+
+/** Bottom tab bar height (56dp / Material touch target band) */
+const MOBILE_NAV_H_PX = 56
 
 function readStoredDesktopSidebarOpen() {
   if (typeof window === 'undefined') return true
@@ -48,67 +45,6 @@ function readStoredDesktopSidebarOpen() {
   } catch {
     return true
   }
-}
-import { focusRingButton, focusRingOnScrim } from './theme/focusStyles'
-
-/** Bottom tab bar height (56dp / Material touch target band) */
-const MOBILE_NAV_H_PX = 56
-
-const mdModules = import.meta.glob('../feature-reviews/**/*.md', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-})
-const metaModules = import.meta.glob('../feature-reviews/**/meta.json', {
-  eager: true,
-})
-
-function compareFeaturesByGeneratedDate(a, b) {
-  const ta = parseGeneratedDate(a.meta)
-  const tb = parseGeneratedDate(b.meta)
-  if (ta !== null && tb !== null) {
-    if (tb !== ta) return tb - ta
-    return a.id.localeCompare(b.id)
-  }
-  if (ta !== null && tb === null) return -1
-  if (ta === null && tb !== null) return 1
-  return a.id.localeCompare(b.id)
-}
-
-function buildFeatures() {
-  const map = {}
-
-  Object.entries(mdModules).forEach(([path, content]) => {
-    const folder = path.split('/').at(-2)
-    if (!map[folder]) map[folder] = { id: folder }
-    map[folder].doc = content
-  })
-
-  Object.entries(metaModules).forEach(([path, mod]) => {
-    const folder = path.split('/').at(-2)
-    if (!map[folder]) map[folder] = { id: folder }
-    map[folder].meta = mod.default ?? mod
-  })
-
-  return Object.values(map).sort(compareFeaturesByGeneratedDate)
-}
-
-const features = buildFeatures()
-
-function useMediaQuery(query) {
-  const [matches, setMatches] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia(query).matches : false
-  )
-
-  useEffect(() => {
-    const m = window.matchMedia(query)
-    const onChange = () => setMatches(m.matches)
-    m.addEventListener('change', onChange)
-    setMatches(m.matches)
-    return () => m.removeEventListener('change', onChange)
-  }, [query])
-
-  return matches
 }
 
 export default function App() {
@@ -190,13 +126,6 @@ export default function App() {
     )
   }
 
-  const tabDesktop = (active) =>
-    `relative z-10 flex min-h-12 touch-manipulation items-center gap-2 rounded-t-lg px-5 text-sm font-semibold ${focusRingButton} ${
-      active
-        ? 'text-primary after:absolute after:bottom-0 after:left-4 after:right-4 after:h-0.5 after:rounded-full after:bg-primary'
-        : 'text-on-surface-variant hover:text-on-surface'
-    }`
-
   const tabMobile = (active) =>
     `relative flex h-14 min-h-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 border-t-2 py-1 text-[11px] font-semibold leading-tight motion-safe:transition-colors ${focusRingButton} ${
       active
@@ -219,164 +148,29 @@ export default function App() {
       <main className="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface touch-manipulation md:bg-surface">
         {feature ? (
           <>
-            {/* Desktop: title row + tab strip (z-10 sticky header region) */}
-            <div className="z-10 hidden shrink-0 flex-col border-b border-outline bg-surface-container md:flex">
-              <div className="flex min-h-16 flex-wrap items-start gap-3 px-6 py-4 lg:gap-4 lg:px-8">
-                <motion.button
-                  type="button"
-                  className={`inline-flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-lg border border-outline bg-surface-container-high text-on-surface hover:bg-surface-container ${focusRingButton}`}
-                  onClick={() => setDesktopSidebarOpen((v) => !v)}
-                  aria-controls="feature-sidebar"
-                  aria-expanded={desktopSidebarOpen}
-                  title={desktopSidebarOpen ? 'Hide feature list' : 'Show feature list'}
-                  whileHover={!prefersReducedMotion ? hoverChrome : undefined}
-                  whileTap={tapScale(!!prefersReducedMotion)}
-                >
-                  <span className="sr-only">
-                    {desktopSidebarOpen ? 'Hide feature list' : 'Show feature list'}
-                  </span>
-                  {desktopSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                </motion.button>
-                <div className="min-w-0 flex-1">
-                  <motion.h1
-                    key={activeId}
-                    className="text-balance text-2xl font-bold tracking-tight text-on-surface lg:text-[1.75rem]"
-                    initial={prefersReducedMotion ? false : { opacity: 0, x: -16, filter: 'blur(6px)' }}
-                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                    transition={prefersReducedMotion ? { duration: 0 } : transitionTitleEnter}
-                  >
-                    {formatFeatureName(feature.meta?.feature ?? feature.id)}
-                  </motion.h1>
-                  {feature.meta?.generated_date && generatedDisplay.label && (
-                    <p className={chromeMetadata}>
-                      Generated{' '}
-                      {generatedDisplay.iso ? (
-                        <time dateTime={generatedDisplay.iso}>{generatedDisplay.label}</time>
-                      ) : (
-                        <span>{generatedDisplay.label}</span>
-                      )}
-                    </p>
-                  )}
-                </div>
-                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                  <motion.button
-                    type="button"
-                    className={chromeDownloadPill}
-                    onClick={handleDownloadMd}
-                    disabled={!feature.doc}
-                    whileHover={!prefersReducedMotion ? hoverChrome : undefined}
-                    whileTap={tapScale(!!prefersReducedMotion)}
-                  >
-                    Download .md
-                  </motion.button>
-                  {feature.meta ? (
-                    <motion.button
-                      type="button"
-                      className={chromeDownloadPill}
-                      onClick={handleDownloadMeta}
-                      whileHover={!prefersReducedMotion ? hoverChrome : undefined}
-                      whileTap={tapScale(!!prefersReducedMotion)}
-                    >
-                      Download meta.json
-                    </motion.button>
-                  ) : (
-                    <span className={chromeMutedHint}>No meta.json</span>
-                  )}
-                </div>
-              </div>
-              <nav
-                className="flex gap-1 border-t border-outline/70 px-4 lg:px-6"
-                aria-label="Documentation and metadata"
-              >
-                <motion.button
-                  type="button"
-                  className={tabDesktop(tab === 'doc')}
-                  onClick={() => setTab('doc')}
-                  aria-current={tab === 'doc' ? 'page' : undefined}
-                  whileHover={!prefersReducedMotion ? hoverChrome : undefined}
-                  whileTap={tapScale(!!prefersReducedMotion)}
-                >
-                  <DocIcon />
-                  Documentation
-                </motion.button>
-                <motion.button
-                  type="button"
-                  className={tabDesktop(tab === 'meta')}
-                  onClick={() => setTab('meta')}
-                  aria-current={tab === 'meta' ? 'page' : undefined}
-                  whileHover={!prefersReducedMotion ? hoverChrome : undefined}
-                  whileTap={tapScale(!!prefersReducedMotion)}
-                >
-                  <MetaIcon />
-                  Metadata
-                  {feature.meta && (
-                    <span className={chromeCountBadge}>{countMetaItems(feature.meta)}</span>
-                  )}
-                </motion.button>
-              </nav>
-            </div>
+            <DesktopHeader
+              activeId={activeId}
+              feature={feature}
+              generatedDisplay={generatedDisplay}
+              desktopSidebarOpen={desktopSidebarOpen}
+              setDesktopSidebarOpen={setDesktopSidebarOpen}
+              tab={tab}
+              setTab={setTab}
+              handleDownloadMd={handleDownloadMd}
+              handleDownloadMeta={handleDownloadMeta}
+              prefersReducedMotion={!!prefersReducedMotion}
+            />
 
-            {/* Mobile: header row + optional generated strip (Option B) */}
-            <div className="z-10 shrink-0 md:hidden">
-              <div className="flex h-14 min-h-[56px] items-center gap-2 border-b border-outline bg-surface-container px-3">
-                <motion.button
-                  type="button"
-                  className={`${chromeIconActionMd} shrink-0`}
-                  onClick={() => setDrawerOpen(true)}
-                  aria-expanded={drawerOpen}
-                  aria-controls="feature-drawer"
-                  aria-label="Open feature list"
-                  whileTap={tapScale(!!prefersReducedMotion)}
-                >
-                  <MenuIcon />
-                </motion.button>
-                <motion.h1
-                  key={activeId}
-                  className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface"
-                  initial={prefersReducedMotion ? false : { opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={prefersReducedMotion ? { duration: 0 } : transitionTitleEnter}
-                >
-                  {formatFeatureName(feature.meta?.feature ?? feature.id)}
-                </motion.h1>
-                <div className="flex shrink-0 items-center gap-1" aria-label="Downloads">
-                  <motion.button
-                    type="button"
-                    className={`${chromeIconActionSm} shrink-0`}
-                    onClick={handleDownloadMd}
-                    disabled={!feature.doc}
-                    title="Download Markdown"
-                    whileTap={tapScale(!!prefersReducedMotion)}
-                  >
-                    <span className="sr-only">Download Markdown</span>
-                    <DocIcon />
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    className={`${chromeIconActionSm} shrink-0`}
-                    onClick={handleDownloadMeta}
-                    disabled={!feature.meta}
-                    title={feature.meta ? 'Download meta.json' : 'No meta.json'}
-                    whileTap={tapScale(!!prefersReducedMotion)}
-                  >
-                    <span className="sr-only">Download meta.json</span>
-                    <JsonDownloadIcon />
-                  </motion.button>
-                </div>
-              </div>
-              {feature.meta?.generated_date && generatedDisplay.label && (
-                <div className="border-b border-outline bg-surface-container px-3 py-1.5">
-                  <p className={chromeMetadataStrip}>
-                    Generated{' '}
-                    {generatedDisplay.iso ? (
-                      <time dateTime={generatedDisplay.iso}>{generatedDisplay.label}</time>
-                    ) : (
-                      <span>{generatedDisplay.label}</span>
-                    )}
-                  </p>
-                </div>
-              )}
-            </div>
+            <MobileHeader
+              activeId={activeId}
+              feature={feature}
+              generatedDisplay={generatedDisplay}
+              drawerOpen={drawerOpen}
+              setDrawerOpen={setDrawerOpen}
+              handleDownloadMd={handleDownloadMd}
+              handleDownloadMeta={handleDownloadMeta}
+              prefersReducedMotion={!!prefersReducedMotion}
+            />
 
             {/* Stacked scroll panels — instant visibility swap (opacity animation caused overlap/flicker) */}
             <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -548,70 +342,5 @@ function countMetaItems(meta) {
     (meta.apis_used?.length ?? 0) +
     (meta.db_operations?.length ?? 0) +
     (meta.functions_traced?.length ?? 0)
-  )
-}
-
-/** Desktop sidebar: chevron tucks the rail away / brings it back (matches stroke weight of MenuIcon). */
-function ChevronLeftIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <polyline points="15 18 9 12 15 6" />
-    </svg>
-  )
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
-
-function MenuIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="4" y1="12" x2="20" y2="12" />
-      <line x1="4" y1="18" x2="20" y2="18" />
-    </svg>
-  )
-}
-
-function DocIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  )
-}
-
-function JsonDownloadIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M4 9V6a2 2 0 0 1 2-2h2M4 15v3a2 2 0 0 0 2 2h2M20 9V6a2 2 0 0 0-2-2h-2M20 15v3a2 2 0 0 1-2 2h-2" />
-      <line x1="9" y1="9" x2="9" y2="15" />
-      <line x1="15" y1="9" x2="15" y2="15" />
-    </svg>
-  )
-}
-
-function MetaIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-    </svg>
-  )
-}
-
-function EmptyIcon() {
-  return (
-    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" className="text-on-surface-muted opacity-40" aria-hidden>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-    </svg>
   )
 }

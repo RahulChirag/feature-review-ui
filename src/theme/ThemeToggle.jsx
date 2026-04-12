@@ -1,93 +1,47 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { useTheme } from './ThemeProvider'
 import { hoverThemeSegment, tapScaleStrong } from './motionTokens'
-import { focusRingButton, focusRingButtonSidebar, focusRingButtonSurface } from './focusStyles'
+import { focusRingButton } from './focusStyles'
 
-export default function ThemeToggle({ variant = 'default', className = '' }) {
+export default function ThemeToggle({ className = '' }) {
   const { preference, setPreference } = useTheme()
   const prefersReducedMotion = useReducedMotion()
-
-  if (variant === 'compact') {
-    return (
-      <div
-        role="group"
-        aria-label="Color theme"
-        className={`grid w-full grid-cols-3 gap-0.5 rounded-lg border border-outline bg-surface-container-high p-0.5 shadow-sm ${className}`}
-      >
-        <CompactThemeBtn
-          label="Light theme"
-          pressed={preference === 'light'}
-          onClick={() => setPreference('light')}
-          r={focusRingButton}
-          prefersReducedMotion={!!prefersReducedMotion}
-        >
-          <SunIcon />
-        </CompactThemeBtn>
-        <CompactThemeBtn
-          label="Dark theme"
-          pressed={preference === 'dark'}
-          onClick={() => setPreference('dark')}
-          r={focusRingButton}
-          prefersReducedMotion={!!prefersReducedMotion}
-        >
-          <MoonIcon />
-        </CompactThemeBtn>
-        <CompactThemeBtn
-          label="Match system theme"
-          pressed={preference === 'system'}
-          onClick={() => setPreference('system')}
-          r={focusRingButton}
-          prefersReducedMotion={!!prefersReducedMotion}
-        >
-          <MonitorIcon />
-        </CompactThemeBtn>
-      </div>
-    )
-  }
-
-  const isSidebar = variant === 'sidebar'
-  const r = isSidebar ? focusRingButtonSidebar : focusRingButtonSurface
 
   return (
     <div
       role="group"
       aria-label="Color theme"
-      className={`inline-flex rounded-lg border p-0.5 shadow-sm ${
-        isSidebar ? 'border-sidebar-border bg-sidebar-hover' : 'border-outline bg-surface-container'
-      } ${className}`}
+      className={`grid w-full grid-cols-3 gap-0.5 rounded-lg border border-outline bg-surface-container-high p-0.5 shadow-sm ${className}`}
     >
-      <ThemeBtn
+      <CompactThemeBtn
         label="Light theme"
         pressed={preference === 'light'}
         onClick={() => setPreference('light')}
-        isSidebar={isSidebar}
-        r={r}
+        prefersReducedMotion={!!prefersReducedMotion}
       >
-        Light
-      </ThemeBtn>
-      <ThemeBtn
+        <SunIcon />
+      </CompactThemeBtn>
+      <CompactThemeBtn
         label="Dark theme"
         pressed={preference === 'dark'}
         onClick={() => setPreference('dark')}
-        isSidebar={isSidebar}
-        r={r}
+        prefersReducedMotion={!!prefersReducedMotion}
       >
-        Dark
-      </ThemeBtn>
-      <ThemeBtn
+        <MoonIcon />
+      </CompactThemeBtn>
+      <CompactThemeBtn
         label="Match system theme"
         pressed={preference === 'system'}
         onClick={() => setPreference('system')}
-        isSidebar={isSidebar}
-        r={r}
+        prefersReducedMotion={!!prefersReducedMotion}
       >
-        System
-      </ThemeBtn>
+        <MonitorIcon />
+      </CompactThemeBtn>
     </div>
   )
 }
 
-function CompactThemeBtn({ label, pressed, onClick, children, r, prefersReducedMotion }) {
+function CompactThemeBtn({ label, pressed, onClick, children, prefersReducedMotion }) {
   return (
     <motion.button
       type="button"
@@ -96,7 +50,7 @@ function CompactThemeBtn({ label, pressed, onClick, children, r, prefersReducedM
       onClick={onClick}
       whileHover={!prefersReducedMotion ? hoverThemeSegment : undefined}
       whileTap={tapScaleStrong(!!prefersReducedMotion)}
-      className={`flex min-h-9 min-w-0 touch-manipulation items-center justify-center rounded-md py-1.5 ${r} motion-safe:transition-colors ${
+      className={`flex min-h-9 min-w-0 touch-manipulation items-center justify-center rounded-md py-1.5 ${focusRingButton} motion-safe:transition-colors ${
         pressed
           ? 'bg-primary-container text-on-primary-container shadow-sm'
           : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -106,28 +60,6 @@ function CompactThemeBtn({ label, pressed, onClick, children, r, prefersReducedM
         {children}
       </span>
     </motion.button>
-  )
-}
-
-function ThemeBtn({ label, pressed, onClick, children, isSidebar, r }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      aria-label={label}
-      onClick={onClick}
-      className={`min-h-9 min-w-[4.25rem] rounded-md px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide motion-safe:transition-colors sm:text-xs ${r} ${
-        pressed
-          ? isSidebar
-            ? 'bg-sidebar-active-bg text-sidebar-on-active shadow-sm'
-            : 'bg-primary-container text-on-primary-container shadow-sm'
-          : isSidebar
-            ? 'text-sidebar-on hover:bg-sidebar hover:text-sidebar-on-active'
-            : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
-      }`}
-    >
-      {children}
-    </button>
   )
 }
 
