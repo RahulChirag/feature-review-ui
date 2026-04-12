@@ -1,6 +1,6 @@
 /**
  * Unified feature navigation for desktop rail and mobile drawer.
- * Uses surface tokens only (no sidebar-* palette). Theme lives in the rail; mobile keeps theme in the app bar.
+ * Uses surface tokens only (no sidebar-* palette). Theme toggle is only here (rail + drawer), not in the main app bar.
  */
 import ThemeToggle from '../theme/ThemeToggle'
 import { formatFeatureName } from '../featureUtils'
@@ -21,7 +21,6 @@ export default function FeatureNavShell({
   onQueryChange,
 }) {
   const isDrawer = variant === 'drawer'
-  const showThemeInShell = !isDrawer
   const showClear = query.length > 0
 
   return (
@@ -73,11 +72,9 @@ export default function FeatureNavShell({
         </div>
       )}
 
-      {showThemeInShell && (
-        <div className="shrink-0 border-b border-outline px-3 py-3">
-          <ThemeToggle variant="compact" className="w-full justify-center" />
-        </div>
-      )}
+      <div className="shrink-0 border-b border-outline px-3 py-3">
+        <ThemeToggle variant="compact" className="w-full justify-center" />
+      </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 pt-1">
         <span className="shrink-0 px-2 pb-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">

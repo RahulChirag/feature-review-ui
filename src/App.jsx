@@ -7,7 +7,6 @@ import Sidebar from './components/Sidebar'
 import DocViewer from './components/DocViewer'
 import MetaViewer from './components/MetaViewer'
 import FeatureNavShell from './components/FeatureNavShell'
-import ThemeToggle from './theme/ThemeToggle'
 import { filterFeatures, formatFeatureName } from './featureUtils'
 import { downloadTextFile } from './downloadUtils'
 
@@ -214,7 +213,7 @@ export default function App() {
               </nav>
             </div>
 
-            {/* Mobile: single 56dp row — menu, title, icon downloads, compact theme */}
+            {/* Mobile: single 56dp row — menu, title, download icons (theme lives in feature drawer / desktop rail only) */}
             <div className="z-10 flex h-14 min-h-[56px] shrink-0 items-center gap-2 border-b border-outline bg-surface-container px-3 md:hidden">
               <button
                 type="button"
@@ -229,13 +228,10 @@ export default function App() {
               <h1 className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface">
                 {formatFeatureName(feature.meta?.feature ?? feature.id)}
               </h1>
-              <div
-                className="flex max-w-[min(11.5rem,46vw)] shrink-0 snap-x snap-mandatory items-center gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] motion-safe:scroll-smooth [&::-webkit-scrollbar]:hidden sm:max-w-none"
-                aria-label="Downloads and theme"
-              >
+              <div className="flex shrink-0 items-center gap-1" aria-label="Downloads">
                 <button
                   type="button"
-                  className={`flex h-10 w-10 shrink-0 snap-start touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
+                  className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
                   onClick={handleDownloadMd}
                   disabled={!feature.doc}
                   title="Download Markdown"
@@ -245,7 +241,7 @@ export default function App() {
                 </button>
                 <button
                   type="button"
-                  className={`flex h-10 w-10 shrink-0 snap-start touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
+                  className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
                   onClick={handleDownloadMeta}
                   disabled={!feature.meta}
                   title={feature.meta ? 'Download meta.json' : 'No meta.json'}
@@ -253,7 +249,6 @@ export default function App() {
                   <span className="sr-only">Download meta.json</span>
                   <JsonDownloadIcon />
                 </button>
-                <ThemeToggle variant="compact" className="shrink-0 snap-start" />
               </div>
             </div>
 
