@@ -12,6 +12,7 @@ import {
 import { tapScale } from '../theme/motionTokens'
 import { focusRingButton, focusRingInput } from '../theme/focusStyles'
 import { formatFeatureName } from '../featureUtils'
+import { APP_DISPLAY_VERSION } from '../appVersion'
 
 const FOOTER_HINT = 'Drop folders into feature-reviews/ to add more'
 
@@ -207,6 +208,12 @@ export default function FeatureNavShell({
 
       <div className="shrink-0 border-t border-outline px-4 py-3">
         <p className="text-[11px] leading-snug text-on-surface-muted">{FOOTER_HINT}</p>
+        <p
+          className="mt-2 text-[10px] tabular-nums tracking-wide text-on-surface-muted/70"
+          aria-label={`App version ${APP_DISPLAY_VERSION}`}
+        >
+          v{APP_DISPLAY_VERSION}
+        </p>
       </div>
     </div>
   )

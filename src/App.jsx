@@ -126,7 +126,7 @@ export default function App() {
   const isMobile = useMediaQuery('(max-width: 768px)')
   const prefersReducedMotion = useReducedMotion()
 
-  const { mainSwipeHandlers, drawerSwipeHandlers, scrimSwipeHandlers } = useMobileDrawerSwipe({
+  useMobileDrawerSwipe({
     isMobile,
     drawerOpen,
     setDrawerOpen,
@@ -216,12 +216,7 @@ export default function App() {
         onQueryChange={setFeatureQuery}
       />
 
-      <main
-        className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface touch-manipulation md:bg-surface ${
-          isMobile ? 'touch-pan-y' : ''
-        }`}
-        {...(isMobile ? mainSwipeHandlers : {})}
-      >
+      <main className="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface touch-manipulation md:bg-surface">
         {feature ? (
           <>
             {/* Desktop: title row + tab strip (z-10 sticky header region) */}
@@ -393,9 +388,7 @@ export default function App() {
               >
                 <div
                   ref={docScrollRef}
-                  className={`min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
-                    isMobile ? 'touch-pan-y' : ''
-                  }`}
+                  className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
                   style={
                     isMobile
                       ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
@@ -429,9 +422,7 @@ export default function App() {
               >
                 <div
                   ref={metaScrollRef}
-                  className={`min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
-                    isMobile ? 'touch-pan-y' : ''
-                  }`}
+                  className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
                   style={
                     isMobile
                       ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
@@ -510,10 +501,10 @@ export default function App() {
               <motion.button
                 key="feature-drawer-scrim"
                 type="button"
-                className={`fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm touch-manipulation touch-pan-y ${focusRingOnScrim}`}
+                data-drawer-scrim="true"
+                className={`fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm touch-manipulation ${focusRingOnScrim}`}
                 aria-label="Close feature list"
                 onClick={() => setDrawerOpen(false)}
-                {...scrimSwipeHandlers}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -522,8 +513,7 @@ export default function App() {
               <motion.div
                 key="feature-drawer"
                 id="feature-drawer"
-                {...drawerSwipeHandlers}
-                className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 touch-manipulation touch-pan-y flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
+                className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 touch-manipulation flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="drawer-title"
