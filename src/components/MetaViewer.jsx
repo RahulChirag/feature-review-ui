@@ -68,8 +68,8 @@ export default function MetaViewer({ meta }) {
   ]
 
   return (
-    <div className="flex min-w-0 max-w-full flex-col gap-4 md:gap-5">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 lg:gap-3">
+    <div className="flex min-w-0 max-w-full flex-col gap-6 md:gap-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-3">
         {stats.map((s) => (
           <StatCard key={s.key} icon={s.icon} value={s.value} label={s.label} valueClass={s.valueClass} />
         ))}
@@ -85,7 +85,7 @@ export default function MetaViewer({ meta }) {
 
       {sorted.files_involved.length > 0 && (
         <Section title="Files Involved" icon="📁" count={sorted.files_involved.length} collapsible>
-          <div className="flex flex-wrap gap-2 p-4 md:p-5">
+          <div className="flex flex-wrap gap-2.5 p-5 md:p-5">
             {sorted.files_involved.map((f, i) => (
               <FileChip key={i} path={f} />
             ))}
@@ -120,7 +120,7 @@ export default function MetaViewer({ meta }) {
 
 function StatCard({ icon, value, label, valueClass }) {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-lg border border-outline bg-surface-container px-3 py-4 text-center shadow-[var(--shadow-elevation-1)] dark:shadow-none motion-safe:transition-shadow hover:shadow-[var(--shadow-elevation-2)] dark:hover:shadow-none">
+    <div className="flex flex-col items-center gap-1 rounded-lg border border-outline bg-surface-container px-3 py-5 text-center shadow-[var(--shadow-elevation-1)] dark:shadow-none motion-safe:transition-shadow hover:shadow-[var(--shadow-elevation-2)] dark:hover:shadow-none">
       <span className="text-[22px]" aria-hidden>
         {icon}
       </span>
@@ -182,7 +182,7 @@ function EntryItem({ raw }) {
   const arrowIdx = raw.indexOf(' -> ')
   if (arrowIdx === -1) {
     return (
-      <div className="min-w-0 border-b border-outline-variant px-4 py-2.5 text-sm text-on-surface-variant last:border-b-0 md:px-5">
+      <div className="min-w-0 border-b border-outline-variant px-4 py-3 text-sm text-on-surface-variant last:border-b-0 md:px-5">
         {raw}
       </div>
     )
@@ -197,8 +197,8 @@ function EntryItem({ raw }) {
   const descPart = parenIdx !== -1 ? rest.slice(parenIdx + 2, -1) : null
 
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-2.5 last:border-b-0 md:px-5">
-      <code className="max-w-full break-all rounded border border-outline bg-code-bg px-1.5 py-0.5 font-mono text-[11.5px] font-bold text-on-surface">
+    <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
+      <code className="max-w-full break-all rounded border border-outline bg-code-bg px-1.5 py-0.5 font-mono text-[12px] font-bold text-on-surface">
         {fileName}
       </code>
       <span className="text-on-surface-muted">→</span>
@@ -223,7 +223,7 @@ function FileChip({ path }) {
 
   return (
     <div
-      className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-md border border-outline bg-surface-container-high px-2.5 py-1.5 text-xs motion-safe:transition-colors hover:border-primary/30 hover:bg-primary-container/20"
+      className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-md border border-outline bg-surface-container-high px-3 py-2 text-xs motion-safe:transition-colors hover:border-primary/30 hover:bg-primary-container/20"
       title={path}
     >
       <span className={`shrink-0 rounded px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${badge}`}>
@@ -250,9 +250,9 @@ function ApiItem({ raw }) {
   const mClass = METHOD_BADGE[method] ?? 'bg-surface-container-high text-on-surface'
 
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-2 last:border-b-0 md:px-5">
-      <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[10.5px] font-extrabold ${mClass}`}>{method}</span>
-      <code className="min-w-0 max-w-full flex-1 break-all font-mono text-[12.5px] text-on-surface">{path}</code>
+    <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
+      <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px] font-extrabold ${mClass}`}>{method}</span>
+      <code className="min-w-0 max-w-full flex-1 break-all font-mono text-[13px] text-on-surface">{path}</code>
       {desc && <span className="w-full text-xs text-on-surface-muted sm:w-auto">{desc}</span>}
     </div>
   )
@@ -285,7 +285,7 @@ function DbItem({ raw }) {
   const ops = tokens.slice(i)
 
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-2 last:border-b-0 md:px-5">
+    <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
       {model && (
         <span className="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
           {model}
@@ -345,7 +345,7 @@ function FnGroup({ file, fns }) {
     <div className="border-b border-outline-variant last:border-b-0">
       <button
         type="button"
-        className={`flex w-full items-center gap-2 border-b border-outline-variant bg-surface-container-high px-4 py-2.5 text-left hover:bg-outline-variant/40 md:px-5 ${focusH}`}
+        className={`flex w-full items-center gap-2 border-b border-outline-variant bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/40 md:px-5 ${focusH}`}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
@@ -353,19 +353,19 @@ function FnGroup({ file, fns }) {
           {open ? '▾' : '▸'}
         </span>
         {file !== 'unknown' && (
-          <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-on-surface-muted">{filePath}/</span>
+          <span className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-on-surface-muted">{filePath}/</span>
         )}
-        <span className="shrink-0 font-mono text-xs font-bold text-on-surface">{fileName}</span>
+        <span className="shrink-0 font-mono text-[13px] font-bold text-on-surface">{fileName}</span>
         <span className="ml-auto shrink-0 rounded-full bg-primary-container px-2 py-0.5 text-[11px] font-semibold text-on-primary-container">
           {fns.length}
         </span>
       </button>
       {open && (
-        <div className="py-1">
+        <div className="py-1.5">
           {fns.map((fn, i) => (
-            <div key={i} className="flex min-w-0 items-center gap-2.5 px-4 py-1.5 pl-9 md:px-5 md:pl-10">
+            <div key={i} className="flex min-w-0 items-center gap-2.5 px-4 py-2 pl-9 md:px-5 md:pl-10">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary opacity-70" aria-hidden />
-              <code className="min-w-0 max-w-full break-words font-mono text-[12.5px] text-primary">{fn}</code>
+              <code className="min-w-0 max-w-full break-words font-mono text-[13px] text-primary">{fn}</code>
             </div>
           ))}
         </div>
