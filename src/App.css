@@ -11,6 +11,7 @@ body {
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* =============================================
@@ -53,6 +54,9 @@ body {
   --r: 8px;
   --r-sm: 5px;
   --r-xs: 3px;
+
+  /* Mobile bottom tab bar + safe area */
+  --mobile-tab-bar-h: 52px;
 }
 
 /* =============================================
@@ -61,8 +65,12 @@ body {
 .app-shell {
   display: flex;
   height: 100vh;
+  min-height: 0;
   overflow: hidden;
   background: var(--main-bg);
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* =============================================
@@ -71,6 +79,7 @@ body {
 .sidebar {
   width: var(--sb-width);
   flex-shrink: 0;
+  min-height: 0;
   background: var(--sb-bg);
   border-right: 1px solid var(--sb-border);
   display: flex;
@@ -138,7 +147,8 @@ body {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 10px;
+  min-height: 44px;
   border-radius: 6px;
   border: none;
   background: transparent;
@@ -226,6 +236,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  min-height: 0;
 }
 
 /* =============================================
@@ -324,6 +335,7 @@ body {
    ============================================= */
 .tab-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 28px 32px;
   scrollbar-width: thin;
@@ -561,8 +573,24 @@ body {
   border-bottom: 1px solid var(--border);
   background: #fafafa;
 }
-.section-header.clickable { cursor: pointer; user-select: none; }
-.section-header.clickable:hover { background: #f3f4f6; }
+.section-header.clickable,
+button.section-header {
+  cursor: pointer;
+  user-select: none;
+}
+button.section-header {
+  width: 100%;
+  margin: 0;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: #fafafa;
+}
+.section-header.clickable:hover,
+button.section-header:hover {
+  background: #f3f4f6;
+}
 
 .section-title {
   font-size: 13.5px;
@@ -800,11 +828,19 @@ body {
   padding: 9px 20px;
   cursor: pointer;
   background: #fafafa;
+  border: none;
   border-bottom: 1px solid var(--border-light);
   transition: background 0.1s;
   user-select: none;
+  width: 100%;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
 }
-.fn-group-header:hover { background: #f3f4f6; }
+.fn-group-header:hover {
+  background: #f3f4f6;
+}
 
 .fn-group-arrow {
   font-size: 11px;
@@ -865,6 +901,241 @@ body {
 }
 
 /* =============================================
+   FEATURE NAV — search + list (sidebar & drawer)
+   ============================================= */
+.feature-nav-search {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.feature-nav-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 36px 10px 11px;
+  min-height: 44px;
+  border-radius: 6px;
+  border: 1px solid var(--sb-border);
+  background: #161b22;
+  color: var(--sb-text-active);
+  font-size: 13px;
+}
+
+.feature-nav-search-input::placeholder {
+  color: var(--sb-label);
+}
+
+.feature-nav-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25);
+}
+
+.feature-nav-search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sb-label);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-nav-search-clear:hover {
+  color: var(--sb-text-active);
+  background: var(--sb-hover);
+}
+
+.feature-drawer .feature-nav-search-input {
+  background: #161b22;
+}
+
+.feature-nav-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* =============================================
+   MOBILE — toolbar, bottom tabs, drawer
+   ============================================= */
+.mobile-feature-toolbar {
+  display: none;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.mobile-open-features-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 10px 12px;
+  min-height: 44px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--header-bg);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.mobile-open-features-btn:hover {
+  background: #f9fafb;
+}
+
+.mobile-feature-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.feature-title--toolbar {
+  font-size: 17px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.feature-date-badge--toolbar {
+  align-self: flex-start;
+}
+
+.mobile-tab-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--header-bg);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+  justify-content: stretch;
+  gap: 0;
+}
+
+.mobile-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  min-height: var(--mobile-tab-bar-h);
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.mobile-tab-btn.active {
+  color: var(--accent);
+  background: var(--accent-pale);
+}
+
+.feature-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.45);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+.feature-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  background: var(--sb-bg);
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  max-height: 100dvh;
+  overscroll-behavior: contain;
+}
+
+.feature-drawer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--sb-border);
+  flex-shrink: 0;
+}
+
+.feature-drawer-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sb-text-active);
+}
+
+.feature-drawer-close {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sb-text);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.feature-drawer-close:hover {
+  background: var(--sb-hover);
+  color: var(--sb-text-active);
+}
+
+.feature-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 8px calc(12px + env(safe-area-inset-bottom));
+  scrollbar-width: thin;
+  scrollbar-color: #30363d transparent;
+}
+
+.feature-drawer-body .feature-nav-search {
+  padding: 0 0 8px;
+}
+
+.feature-drawer-body .nav-section-label {
+  display: none;
+}
+
+/* =============================================
    RESPONSIVE
    ============================================= */
 @media (max-width: 1100px) {
@@ -893,13 +1164,11 @@ body {
   .app-shell {
     flex-direction: column;
     height: 100dvh;
+    min-height: 100dvh;
   }
 
-  .sidebar {
-    width: 100%;
-    max-height: 38vh;
-    border-right: none;
-    border-bottom: 1px solid var(--sb-border);
+  .sidebar--desktop {
+    display: none !important;
   }
 
   .sidebar-header {
@@ -914,8 +1183,16 @@ body {
     padding: 10px 14px;
   }
 
+  .mobile-feature-toolbar {
+    display: flex;
+  }
+
   .feature-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
     padding: 14px 14px 0;
+    background: var(--header-bg);
   }
 
   .feature-meta-row {
@@ -928,6 +1205,19 @@ body {
     font-size: 19px;
   }
 
+  .tab-bar--header {
+    display: none !important;
+  }
+
+  .app-shell--has-feature .mobile-tab-bar {
+    display: flex;
+  }
+
+  .app-shell--has-feature .tab-content {
+    padding: 12px;
+    padding-bottom: calc(12px + var(--mobile-tab-bar-h) + env(safe-area-inset-bottom, 0px));
+  }
+
   .tab-bar {
     overflow-x: auto;
     gap: 2px;
@@ -936,6 +1226,7 @@ body {
 
   .tab-btn {
     padding: 10px 10px;
+    min-height: 44px;
     font-size: 12.5px;
     flex-shrink: 0;
   }
