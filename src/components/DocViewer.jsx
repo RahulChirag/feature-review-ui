@@ -14,7 +14,7 @@ const mdComponents = {
   ),
   h2: ({ children }) => (
     <h2 className="mb-3 mt-9 flex items-center gap-2 text-lg font-bold tracking-tight text-on-surface max-md:mt-8 md:text-xl">
-      <span className="inline-block h-[1em] w-1 shrink-0 rounded-sm bg-primary" aria-hidden />
+      <span className="inline-block h-[1em] w-1 shrink-0 bg-primary" aria-hidden />
       {children}
     </h2>
   ),
@@ -46,7 +46,7 @@ const mdComponents = {
   a: ({ href, children }) => (
     <a
       href={href}
-      className="rounded-sm font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container"
+      className="font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container"
     >
       {children}
     </a>
@@ -59,7 +59,7 @@ export default function DocViewer({ content }) {
 
   if (!content) {
     return (
-      <div className="rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
+      <div className="border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
         No documentation file found for this feature.
       </div>
     )
@@ -68,7 +68,7 @@ export default function DocViewer({ content }) {
   const codeFontSize = '15px'
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words rounded-lg border border-outline bg-surface-container px-0 py-6 shadow-[var(--shadow-elevation-1)] dark:shadow-none md:px-8 md:py-8">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words border border-outline bg-surface-container px-0 py-6 md:px-8 md:py-8">
       <div className="mx-auto w-full max-w-prose px-4 text-on-surface md:px-0">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
@@ -78,7 +78,7 @@ export default function DocViewer({ content }) {
               const match = /language-(\w+)/.exec(className || '')
               if (match) {
                 return (
-                  <div className="my-4 -mx-4 max-w-none overflow-x-auto [-webkit-overflow-scrolling:touch] md:mx-0 md:max-w-full md:overflow-hidden md:rounded-lg md:border md:border-outline">
+                  <div className="my-4 -mx-4 max-w-none overflow-x-auto [-webkit-overflow-scrolling:touch] md:mx-0 md:max-w-full md:overflow-hidden md:border md:border-outline">
                     <SyntaxHighlighter
                       style={codeStyle}
                       language={match[1]}
@@ -98,7 +98,7 @@ export default function DocViewer({ content }) {
               }
               return (
                 <code
-                  className="rounded border border-code-border bg-code-bg px-1.5 py-0.5 font-mono text-[12.5px] text-code-text [overflow-wrap:anywhere] max-md:text-[13px]"
+                  className="border border-code-border bg-code-bg px-1.5 py-0.5 font-mono text-[12.5px] text-code-text [overflow-wrap:anywhere] max-md:text-[13px]"
                   {...props}
                 >
                   {children}
@@ -107,7 +107,7 @@ export default function DocViewer({ content }) {
             },
             table({ children }) {
               return (
-                <div className="my-5 -mx-4 max-w-none overflow-x-auto border-y border-outline bg-surface-container [-webkit-overflow-scrolling:touch] md:mx-0 md:my-4 md:rounded-lg md:border md:border-outline md:bg-transparent">
+                <div className="my-5 -mx-4 max-w-none overflow-x-auto border-y border-outline bg-surface-container [-webkit-overflow-scrolling:touch] md:mx-0 md:my-4 md:border md:border-outline md:bg-transparent">
                   <table className="w-full border-collapse text-[12px] text-on-surface/90 sm:text-[13px]">{children}</table>
                 </div>
               )
@@ -127,7 +127,7 @@ export default function DocViewer({ content }) {
             ),
             blockquote({ children }) {
               return (
-                <blockquote className="my-4 rounded-r-md border-l-[3px] border-blockquote-border bg-blockquote-bg px-4 py-2.5 text-[color:var(--app-blockquote-text)] [&>p]:m-0 [&>p]:text-inherit">
+                <blockquote className="my-4 border-l-[3px] border-blockquote-border bg-blockquote-bg px-4 py-2.5 text-[color:var(--app-blockquote-text)] [&>p]:m-0 [&>p]:text-inherit">
                   {children}
                 </blockquote>
               )

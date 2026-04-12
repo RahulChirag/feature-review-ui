@@ -258,7 +258,7 @@ export default function App() {
                   : undefined
               }
             >
-              <div className="mx-auto w-full max-w-6xl px-3 py-5 md:px-8 md:py-8 lg:px-10">
+              <div className="mx-auto w-full max-w-6xl">
                 {tab === 'doc' ? <DocViewer content={feature.doc} /> : <MetaViewer meta={feature.meta} />}
               </div>
             </div>

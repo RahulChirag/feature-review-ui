@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 const strSort = (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })
 
 const focusH =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container motion-safe:transition-shadow'
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container motion-safe:transition-colors'
 
 const STAT_DEFS = [
   { key: 'files', label: 'Files', icon: '📁', valueClass: 'text-violet-600 dark:text-violet-400' },
@@ -34,7 +34,7 @@ const METHOD_BADGE = {
 export default function MetaViewer({ meta }) {
   if (!meta) {
     return (
-      <div className="rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
+      <div className="border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
         No metadata file found for this feature.
       </div>
     )
@@ -120,7 +120,7 @@ export default function MetaViewer({ meta }) {
 
 function StatCard({ icon, value, label, valueClass }) {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-lg border border-outline bg-surface-container px-3 py-5 text-center shadow-[var(--shadow-elevation-1)] dark:shadow-none motion-safe:transition-shadow hover:shadow-[var(--shadow-elevation-2)] dark:hover:shadow-none">
+    <div className="flex flex-col items-center gap-1 border border-outline bg-surface-container px-3 py-5 text-center">
       <span className="text-[22px]" aria-hidden>
         {icon}
       </span>
@@ -135,7 +135,7 @@ function Section({ title, icon, count, children, collapsible = false }) {
 
   if (collapsible) {
     return (
-      <div className="overflow-hidden rounded-lg border border-outline bg-surface-container shadow-[var(--shadow-elevation-1)] dark:shadow-none">
+      <div className="overflow-hidden border border-outline bg-surface-container">
         <button
           type="button"
           className={`flex w-full items-center justify-between border-b border-outline bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/30 md:px-5 ${focusH}`}
@@ -145,7 +145,7 @@ function Section({ title, icon, count, children, collapsible = false }) {
           <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
             <span aria-hidden>{icon}</span>
             {title}
-            <span className="inline-flex min-h-[22px] min-w-[22px] items-center justify-center rounded-full bg-primary-container px-2 text-[11px] font-bold text-on-primary-container">
+            <span className="inline-flex min-h-[22px] min-w-[22px] items-center justify-center bg-primary-container px-2 text-[11px] font-bold text-on-primary-container">
               {count}
             </span>
           </div>
@@ -163,12 +163,12 @@ function Section({ title, icon, count, children, collapsible = false }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-outline bg-surface-container shadow-[var(--shadow-elevation-1)] dark:shadow-none">
+    <div className="overflow-hidden border border-outline bg-surface-container">
       <div className="border-b border-outline bg-surface-container-high px-4 py-3 md:px-5">
         <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
           <span aria-hidden>{icon}</span>
           {title}
-          <span className="inline-flex min-h-[22px] min-w-[22px] items-center justify-center rounded-full bg-primary-container px-2 text-[11px] font-bold text-on-primary-container">
+          <span className="inline-flex min-h-[22px] min-w-[22px] items-center justify-center bg-primary-container px-2 text-[11px] font-bold text-on-primary-container">
             {count}
           </span>
         </div>
@@ -198,7 +198,7 @@ function EntryItem({ raw }) {
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
-      <code className="max-w-full break-all rounded border border-outline bg-code-bg px-1.5 py-0.5 font-mono text-[12px] font-bold text-on-surface">
+      <code className="max-w-full break-all border border-outline bg-code-bg px-1.5 py-0.5 font-mono text-[12px] font-bold text-on-surface">
         {fileName}
       </code>
       <span className="text-on-surface-muted">→</span>
@@ -206,7 +206,7 @@ function EntryItem({ raw }) {
         {methodPart}
       </code>
       {descPart && (
-        <span className="w-full rounded-full border border-outline-variant bg-surface-container-high px-2 py-0.5 text-xs text-on-surface-muted sm:w-auto">
+        <span className="w-full border border-outline-variant bg-surface-container-high px-2 py-0.5 text-xs text-on-surface-muted sm:w-auto">
           {descPart}
         </span>
       )}
@@ -223,10 +223,10 @@ function FileChip({ path }) {
 
   return (
     <div
-      className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-md border border-outline bg-surface-container-high px-3 py-2 text-xs motion-safe:transition-colors hover:border-primary/30 hover:bg-primary-container/20"
+      className="inline-flex min-w-0 max-w-full items-center gap-2 border border-outline bg-surface-container-high px-3 py-2 text-xs motion-safe:transition-colors hover:border-primary/30 hover:bg-primary-container/20"
       title={path}
     >
-      <span className={`shrink-0 rounded px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${badge}`}>
+      <span className={`shrink-0 px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${badge}`}>
         {ext}
       </span>
       <span className="min-w-0 break-all font-mono font-semibold text-on-surface">{name}</span>
@@ -251,7 +251,7 @@ function ApiItem({ raw }) {
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
-      <span className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[11px] font-extrabold ${mClass}`}>{method}</span>
+      <span className={`shrink-0 px-1.5 py-0.5 font-mono text-[11px] font-extrabold ${mClass}`}>{method}</span>
       <code className="min-w-0 max-w-full flex-1 break-all font-mono text-[13px] text-on-surface">{path}</code>
       {desc && <span className="w-full text-xs text-on-surface-muted sm:w-auto">{desc}</span>}
     </div>
@@ -287,12 +287,12 @@ function DbItem({ raw }) {
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
       {model && (
-        <span className="shrink-0 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+        <span className="shrink-0 border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
           {model}
         </span>
       )}
       {ops.length > 0 && (
-        <span className="shrink-0 rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-xs font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        <span className="shrink-0 border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-xs font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
           {ops.join(' ')}
         </span>
       )}
@@ -356,7 +356,7 @@ function FnGroup({ file, fns }) {
           <span className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-on-surface-muted">{filePath}/</span>
         )}
         <span className="shrink-0 font-mono text-[13px] font-bold text-on-surface">{fileName}</span>
-        <span className="ml-auto shrink-0 rounded-full bg-primary-container px-2 py-0.5 text-[11px] font-semibold text-on-primary-container">
+        <span className="ml-auto shrink-0 bg-primary-container px-2 py-0.5 text-[11px] font-semibold text-on-primary-container">
           {fns.length}
         </span>
       </button>
@@ -364,7 +364,7 @@ function FnGroup({ file, fns }) {
         <div className="py-1.5">
           {fns.map((fn, i) => (
             <div key={i} className="flex min-w-0 items-center gap-2.5 px-4 py-2 pl-9 md:px-5 md:pl-10">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary opacity-70" aria-hidden />
+              <span className="h-1.5 w-1.5 shrink-0 bg-primary opacity-70" aria-hidden />
               <code className="min-w-0 max-w-full break-words font-mono text-[13px] text-primary">{fn}</code>
             </div>
           ))}
