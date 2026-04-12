@@ -34,7 +34,7 @@ const METHOD_BADGE = {
 export default function MetaViewer({ meta }) {
   if (!meta) {
     return (
-      <div className="border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
+      <div className="rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
         No metadata file found for this feature.
       </div>
     )
@@ -120,7 +120,7 @@ export default function MetaViewer({ meta }) {
 
 function StatCard({ icon, value, label, valueClass }) {
   return (
-    <div className="flex flex-col items-center gap-1 border border-outline bg-surface-container px-3 py-5 text-center">
+    <div className="flex flex-col items-center gap-1 rounded-lg border border-outline bg-surface-container px-3 py-5 text-center">
       <span className="text-[22px]" aria-hidden>
         {icon}
       </span>
@@ -135,7 +135,7 @@ function Section({ title, icon, count, children, collapsible = false }) {
 
   if (collapsible) {
     return (
-      <div className="overflow-hidden border border-outline bg-surface-container">
+      <div className="overflow-hidden rounded-lg border border-outline bg-surface-container">
         <button
           type="button"
           className={`flex w-full items-center justify-between border-b border-outline bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/30 md:px-5 ${focusH}`}
@@ -163,7 +163,7 @@ function Section({ title, icon, count, children, collapsible = false }) {
   }
 
   return (
-    <div className="overflow-hidden border border-outline bg-surface-container">
+    <div className="overflow-hidden rounded-lg border border-outline bg-surface-container">
       <div className="border-b border-outline bg-surface-container-high px-4 py-3 md:px-5">
         <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
           <span aria-hidden>{icon}</span>

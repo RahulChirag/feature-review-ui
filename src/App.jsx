@@ -307,19 +307,22 @@ export default function App() {
           />
           <div
             id="feature-drawer"
-            className="fixed inset-x-0 bottom-0 top-0 z-[110] m-4 flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden rounded-2xl border border-sidebar-border bg-sidebar shadow-2xl"
-            style={{ marginTop: 'max(1rem, env(safe-area-inset-top))' }}
+            className="fixed inset-y-0 left-0 z-[110] flex w-[min(20rem,85vw)] flex-col overflow-hidden border-r border-outline bg-surface-container shadow-[var(--shadow-elevation-2)]"
+            style={{
+              paddingTop: 'env(safe-area-inset-top)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="drawer-title"
           >
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-sidebar-border px-4">
-              <span id="drawer-title" className="text-lg font-semibold text-sidebar-on-active">
+            <div className="flex h-14 shrink-0 items-center justify-between border-b border-outline bg-surface-container-high px-4">
+              <span id="drawer-title" className="text-base font-semibold text-on-surface">
                 Features
               </span>
               <button
                 type="button"
-                className={`flex h-11 w-11 items-center justify-center rounded-full text-sidebar-on hover:bg-sidebar-hover ${btnFocus}`}
+                className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container text-on-surface hover:bg-surface-container-high ${btnFocus}`}
                 onClick={() => setDrawerOpen(false)}
                 aria-label="Close"
               >
@@ -328,8 +331,9 @@ export default function App() {
                 </span>
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-2">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3">
               <FeatureNav
+                variant="sheet"
                 features={filteredFeatures}
                 totalCount={features.length}
                 activeId={activeId}
@@ -337,6 +341,11 @@ export default function App() {
                 query={featureQuery}
                 onQueryChange={setFeatureQuery}
               />
+            </div>
+            <div className="shrink-0 border-t border-outline px-4 py-3">
+              <p className="text-[11px] leading-snug text-on-surface-muted">
+                Drop folders into feature-reviews/ to add more
+              </p>
             </div>
           </div>
         </>

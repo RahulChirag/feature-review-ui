@@ -5,7 +5,7 @@ import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useTheme } from '../theme/ThemeProvider'
 
-/* Full-width column: uniform horizontal padding; prose uses full width of main (no max-w-prose). */
+/* Full-width column; outer shell uses rounded-lg (viewer card only — markdown blocks stay square). */
 const mdComponents = {
   h1: ({ children }) => (
     <h1 className="mb-5 border-b-2 border-outline pb-3.5 text-xl font-extrabold tracking-tight text-on-surface max-md:mb-4 md:text-[26px]">
@@ -59,7 +59,7 @@ export default function DocViewer({ content }) {
 
   if (!content) {
     return (
-      <div className="border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
+      <div className="rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
         No documentation file found for this feature.
       </div>
     )
@@ -68,7 +68,7 @@ export default function DocViewer({ content }) {
   const codeFontSize = '15px'
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words border border-outline bg-surface-container px-4 py-6 text-on-surface md:px-8 md:py-8 lg:px-10">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words rounded-lg border border-outline bg-surface-container px-4 py-6 text-on-surface md:px-8 md:py-8 lg:px-10">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
