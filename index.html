@@ -1,9 +1,22 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      (function () {
+        try {
+          var k = 'feature-review-ui-theme'
+          var v = localStorage.getItem(k)
+          var dark =
+            v === 'dark' ||
+            (v !== 'light' && (!v || v === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.classList.toggle('dark', dark)
+        } catch (e) {}
+      })()
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Feature Reviews</title>
+    <link href="/src/App.css" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c3aed'/><path d='M8 10h16M8 16h12M8 22h10' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>" />
   </head>
   <body>
