@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
+import { chromeCountBadge, chromeMutedText } from '../theme/chromeStyles'
+import { focusRingButton } from '../theme/focusStyles'
 
 const strSort = (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })
-
-const focusH =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container motion-safe:transition-colors'
 
 const STAT_DEFS = [
   { key: 'files', label: 'Files', icon: '📁', valueClass: 'text-violet-600 dark:text-violet-400' },
@@ -34,7 +33,7 @@ const METHOD_BADGE = {
 export default function MetaViewer({ meta }) {
   if (!meta) {
     return (
-      <div className="rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
+      <div className={`rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm ${chromeMutedText}`}>
         No metadata file found for this feature.
       </div>
     )
@@ -138,16 +137,14 @@ function Section({ title, icon, count, children, collapsible = false }) {
       <div className="overflow-hidden rounded-lg border border-outline bg-surface-container">
         <button
           type="button"
-          className={`flex w-full items-center justify-between border-b border-outline bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/30 md:px-5 ${focusH}`}
+          className={`flex w-full items-center justify-between border-b border-outline bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/30 md:px-5 ${focusRingButton}`}
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
         >
           <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
             <span aria-hidden>{icon}</span>
             {title}
-            <span className="inline-flex min-h-[22px] min-w-[22px] items-center justify-center bg-primary-container px-2 text-[11px] font-bold text-on-primary-container">
-              {count}
-            </span>
+            <span className={chromeCountBadge}>{count}</span>
           </div>
           <span
             className="inline-block text-on-surface-muted motion-safe:transition-transform"
@@ -168,9 +165,7 @@ function Section({ title, icon, count, children, collapsible = false }) {
         <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
           <span aria-hidden>{icon}</span>
           {title}
-          <span className="inline-flex min-h-[22px] min-w-[22px] items-center justify-center bg-primary-container px-2 text-[11px] font-bold text-on-primary-container">
-            {count}
-          </span>
+          <span className={chromeCountBadge}>{count}</span>
         </div>
       </div>
       <div>{children}</div>
@@ -345,7 +340,7 @@ function FnGroup({ file, fns }) {
     <div className="border-b border-outline-variant last:border-b-0">
       <button
         type="button"
-        className={`flex w-full items-center gap-2 border-b border-outline-variant bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/40 md:px-5 ${focusH}`}
+        className={`flex w-full items-center gap-2 border-b border-outline-variant bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/40 md:px-5 ${focusRingButton}`}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
@@ -356,9 +351,7 @@ function FnGroup({ file, fns }) {
           <span className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-on-surface-muted">{filePath}/</span>
         )}
         <span className="shrink-0 font-mono text-[13px] font-bold text-on-surface">{fileName}</span>
-        <span className="ml-auto shrink-0 bg-primary-container px-2 py-0.5 text-[11px] font-semibold text-on-primary-container">
-          {fns.length}
-        </span>
+        <span className={`${chromeCountBadge} ml-auto shrink-0`}>{fns.length}</span>
       </button>
       {open && (
         <div className="py-1.5">

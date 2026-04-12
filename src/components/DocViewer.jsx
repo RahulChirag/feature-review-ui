@@ -4,6 +4,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useTheme } from '../theme/ThemeProvider'
+import { focusRingLink } from '../theme/focusStyles'
 
 /* Full-width column; outer viewer card has square corners. */
 const mdComponents = {
@@ -46,7 +47,7 @@ const mdComponents = {
   a: ({ href, children }) => (
     <a
       href={href}
-      className="font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container"
+      className={`font-medium text-primary underline-offset-2 hover:underline ${focusRingLink}`}
     >
       {children}
     </a>

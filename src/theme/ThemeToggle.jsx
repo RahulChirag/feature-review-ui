@@ -1,14 +1,5 @@
 import { useTheme } from './ThemeProvider'
-
-const ring =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active-border/80 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar motion-safe:transition-shadow'
-
-const ringMain =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-safe:transition-shadow'
-
-/** Focus ring for compact control on surface-container (nav shell) */
-const ringCompact =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container motion-safe:transition-colors'
+import { focusRingButton, focusRingButtonSidebar, focusRingButtonSurface } from './focusStyles'
 
 export default function ThemeToggle({ variant = 'default', className = '' }) {
   const { preference, setPreference } = useTheme()
@@ -24,7 +15,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           label="Light theme"
           pressed={preference === 'light'}
           onClick={() => setPreference('light')}
-          r={ringCompact}
+          r={focusRingButton}
         >
           <SunIcon />
         </CompactThemeBtn>
@@ -32,7 +23,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           label="Dark theme"
           pressed={preference === 'dark'}
           onClick={() => setPreference('dark')}
-          r={ringCompact}
+          r={focusRingButton}
         >
           <MoonIcon />
         </CompactThemeBtn>
@@ -40,7 +31,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           label="Match system theme"
           pressed={preference === 'system'}
           onClick={() => setPreference('system')}
-          r={ringCompact}
+          r={focusRingButton}
         >
           <MonitorIcon />
         </CompactThemeBtn>
@@ -49,7 +40,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
   }
 
   const isSidebar = variant === 'sidebar'
-  const r = isSidebar ? ring : ringMain
+  const r = isSidebar ? focusRingButtonSidebar : focusRingButtonSurface
 
   return (
     <div

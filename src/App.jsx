@@ -7,8 +7,24 @@ import Sidebar from './components/Sidebar'
 import DocViewer from './components/DocViewer'
 import MetaViewer from './components/MetaViewer'
 import FeatureNavShell from './components/FeatureNavShell'
-import { filterFeatures, formatFeatureName } from './featureUtils'
+import {
+  filterFeatures,
+  formatFeatureName,
+  formatGeneratedDateForDisplay,
+  parseGeneratedDate,
+} from './featureUtils'
 import { downloadTextFile } from './downloadUtils'
+import {
+  chromeCountBadge,
+  chromeDownloadPill,
+  chromeIconActionMd,
+  chromeIconActionSm,
+  chromeMetadata,
+  chromeMetadataStrip,
+  chromeMutedHint,
+} from './theme/chromeStyles'
+import { useMobileDrawerSwipe } from './hooks/useMobileDrawerSwipe'
+import { focusRingButton, focusRingOnScrim } from './theme/focusStyles'
 
 /** Bottom tab bar height (56dp / Material touch target band) */
 const MOBILE_NAV_H_PX = 56
@@ -21,13 +37,6 @@ const mdModules = import.meta.glob('../feature-reviews/**/*.md', {
 const metaModules = import.meta.glob('../feature-reviews/**/meta.json', {
   eager: true,
 })
-
-function parseGeneratedDate(meta) {
-  const raw = meta?.generated_date
-  if (raw == null || raw === '') return null
-  const t = Date.parse(String(raw))
-  return Number.isNaN(t) ? null : t
-}
 
 function compareFeaturesByGeneratedDate(a, b) {
   const ta = parseGeneratedDate(a.meta)
@@ -61,9 +70,6 @@ function buildFeatures() {
 
 const features = buildFeatures()
 
-const btnFocus =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container motion-safe:transition-shadow'
-
 function useMediaQuery(query) {
   const [matches, setMatches] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia(query).matches : false
@@ -91,6 +97,12 @@ export default function App() {
 
   const isMobile = useMediaQuery('(max-width: 768px)')
 
+  const { mainSwipeHandlers, drawerSwipeHandlers } = useMobileDrawerSwipe({
+    isMobile,
+    drawerOpen,
+    setDrawerOpen,
+  })
+
   useEffect(() => {
     if (!isMobile) setDrawerOpen(false)
   }, [isMobile])
@@ -116,6 +128,11 @@ export default function App() {
 
   const feature = features.find((f) => f.id === activeId)
 
+  const generatedDisplay = useMemo(
+    () => formatGeneratedDateForDisplay(feature?.meta?.generated_date),
+    [feature?.meta?.generated_date]
+  )
+
   function selectFeature(id) {
     setActiveId(id)
     setTab('doc')
@@ -136,17 +153,15 @@ export default function App() {
     )
   }
 
-  const downloadPill = `inline-flex min-h-10 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container px-4 text-xs font-semibold text-on-surface shadow-sm hover:bg-surface-container-high disabled:opacity-40 ${btnFocus}`
-
   const tabDesktop = (active) =>
-    `relative z-10 flex min-h-12 touch-manipulation items-center gap-2 rounded-t-lg px-5 text-sm font-semibold ${btnFocus} ${
+    `relative z-10 flex min-h-12 touch-manipulation items-center gap-2 rounded-t-lg px-5 text-sm font-semibold ${focusRingButton} ${
       active
         ? 'text-primary after:absolute after:bottom-0 after:left-4 after:right-4 after:h-0.5 after:rounded-full after:bg-primary'
         : 'text-on-surface-variant hover:text-on-surface'
     }`
 
   const tabMobile = (active) =>
-    `relative flex h-14 min-h-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 border-t-2 py-1 text-[11px] font-semibold leading-tight motion-safe:transition-colors ${btnFocus} ${
+    `relative flex h-14 min-h-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 border-t-2 py-1 text-[11px] font-semibold leading-tight motion-safe:transition-colors ${focusRingButton} ${
       active
         ? 'border-primary bg-primary/10 text-primary [&_svg]:stroke-primary'
         : 'border-transparent text-on-surface-variant'
@@ -163,7 +178,10 @@ export default function App() {
         onQueryChange={setFeatureQuery}
       />
 
-      <main className="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface md:bg-surface">
+      <main
+        className="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface md:bg-surface"
+        {...(isMobile ? mainSwipeHandlers : {})}
+      >
         {feature ? (
           <>
             {/* Desktop: title row + tab strip (z-10 sticky header region) */}
@@ -173,23 +191,27 @@ export default function App() {
                   <h1 className="text-balance text-2xl font-bold tracking-tight text-on-surface lg:text-[1.75rem]">
                     {formatFeatureName(feature.meta?.feature ?? feature.id)}
                   </h1>
-                  {feature.meta?.generated_date && (
-                    <p className="mt-1.5 text-sm text-on-surface-variant">
+                  {feature.meta?.generated_date && generatedDisplay.label && (
+                    <p className={chromeMetadata}>
                       Generated{' '}
-                      <time dateTime={feature.meta.generated_date}>{feature.meta.generated_date}</time>
+                      {generatedDisplay.iso ? (
+                        <time dateTime={generatedDisplay.iso}>{generatedDisplay.label}</time>
+                      ) : (
+                        <span>{generatedDisplay.label}</span>
+                      )}
                     </p>
                   )}
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                  <button type="button" className={downloadPill} onClick={handleDownloadMd} disabled={!feature.doc}>
+                  <button type="button" className={chromeDownloadPill} onClick={handleDownloadMd} disabled={!feature.doc}>
                     Download .md
                   </button>
                   {feature.meta ? (
-                    <button type="button" className={downloadPill} onClick={handleDownloadMeta}>
+                    <button type="button" className={chromeDownloadPill} onClick={handleDownloadMeta}>
                       Download meta.json
                     </button>
                   ) : (
-                    <span className="self-center px-2 text-xs text-on-surface-muted">No meta.json</span>
+                    <span className={chromeMutedHint}>No meta.json</span>
                   )}
                 </div>
               </div>
@@ -197,59 +219,81 @@ export default function App() {
                 className="flex gap-1 border-t border-outline/70 px-4 lg:px-6"
                 aria-label="Documentation and metadata"
               >
-                <button type="button" className={tabDesktop(tab === 'doc')} onClick={() => setTab('doc')}>
+                <button
+                  type="button"
+                  className={tabDesktop(tab === 'doc')}
+                  onClick={() => setTab('doc')}
+                  aria-current={tab === 'doc' ? 'page' : undefined}
+                >
                   <DocIcon />
                   Documentation
                 </button>
-                <button type="button" className={tabDesktop(tab === 'meta')} onClick={() => setTab('meta')}>
+                <button
+                  type="button"
+                  className={tabDesktop(tab === 'meta')}
+                  onClick={() => setTab('meta')}
+                  aria-current={tab === 'meta' ? 'page' : undefined}
+                >
                   <MetaIcon />
                   Metadata
                   {feature.meta && (
-                    <span className="rounded-full bg-outline-variant px-2 py-0.5 text-[11px] font-bold tabular-nums text-on-surface-variant dark:bg-surface-container-high">
-                      {countMetaItems(feature.meta)}
-                    </span>
+                    <span className={chromeCountBadge}>{countMetaItems(feature.meta)}</span>
                   )}
                 </button>
               </nav>
             </div>
 
-            {/* Mobile: single 56dp row — menu, title, download icons (theme lives in feature drawer / desktop rail only) */}
-            <div className="z-10 flex h-14 min-h-[56px] shrink-0 items-center gap-2 border-b border-outline bg-surface-container px-3 md:hidden">
-              <button
-                type="button"
-                className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm ${btnFocus}`}
-                onClick={() => setDrawerOpen(true)}
-                aria-expanded={drawerOpen}
-                aria-controls="feature-drawer"
-                aria-label="Open feature list"
-              >
-                <MenuIcon />
-              </button>
-              <h1 className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface">
-                {formatFeatureName(feature.meta?.feature ?? feature.id)}
-              </h1>
-              <div className="flex shrink-0 items-center gap-1" aria-label="Downloads">
+            {/* Mobile: header row + optional generated strip (Option B) */}
+            <div className="z-10 shrink-0 md:hidden">
+              <div className="flex h-14 min-h-[56px] items-center gap-2 border-b border-outline bg-surface-container px-3">
                 <button
                   type="button"
-                  className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
-                  onClick={handleDownloadMd}
-                  disabled={!feature.doc}
-                  title="Download Markdown"
+                  className={`${chromeIconActionMd} shrink-0`}
+                  onClick={() => setDrawerOpen(true)}
+                  aria-expanded={drawerOpen}
+                  aria-controls="feature-drawer"
+                  aria-label="Open feature list"
                 >
-                  <span className="sr-only">Download Markdown</span>
-                  <DocIcon />
+                  <MenuIcon />
                 </button>
-                <button
-                  type="button"
-                  className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
-                  onClick={handleDownloadMeta}
-                  disabled={!feature.meta}
-                  title={feature.meta ? 'Download meta.json' : 'No meta.json'}
-                >
-                  <span className="sr-only">Download meta.json</span>
-                  <JsonDownloadIcon />
-                </button>
+                <h1 className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface">
+                  {formatFeatureName(feature.meta?.feature ?? feature.id)}
+                </h1>
+                <div className="flex shrink-0 items-center gap-1" aria-label="Downloads">
+                  <button
+                    type="button"
+                    className={`${chromeIconActionSm} shrink-0`}
+                    onClick={handleDownloadMd}
+                    disabled={!feature.doc}
+                    title="Download Markdown"
+                  >
+                    <span className="sr-only">Download Markdown</span>
+                    <DocIcon />
+                  </button>
+                  <button
+                    type="button"
+                    className={`${chromeIconActionSm} shrink-0`}
+                    onClick={handleDownloadMeta}
+                    disabled={!feature.meta}
+                    title={feature.meta ? 'Download meta.json' : 'No meta.json'}
+                  >
+                    <span className="sr-only">Download meta.json</span>
+                    <JsonDownloadIcon />
+                  </button>
+                </div>
               </div>
+              {feature.meta?.generated_date && generatedDisplay.label && (
+                <div className="border-b border-outline bg-surface-container px-3 py-1.5">
+                  <p className={chromeMetadataStrip}>
+                    Generated{' '}
+                    {generatedDisplay.iso ? (
+                      <time dateTime={generatedDisplay.iso}>{generatedDisplay.label}</time>
+                    ) : (
+                      <span>{generatedDisplay.label}</span>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Stacked scroll panels — each tab keeps its own scroll position */}
@@ -295,17 +339,25 @@ export default function App() {
                 style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
                 aria-label="Documentation and metadata"
               >
-                <button type="button" className={tabMobile(tab === 'doc')} onClick={() => setTab('doc')}>
+                <button
+                  type="button"
+                  className={tabMobile(tab === 'doc')}
+                  onClick={() => setTab('doc')}
+                  aria-current={tab === 'doc' ? 'page' : undefined}
+                >
                   <DocIcon />
                   <span>Docs</span>
                 </button>
-                <button type="button" className={tabMobile(tab === 'meta')} onClick={() => setTab('meta')}>
+                <button
+                  type="button"
+                  className={tabMobile(tab === 'meta')}
+                  onClick={() => setTab('meta')}
+                  aria-current={tab === 'meta' ? 'page' : undefined}
+                >
                   <MetaIcon />
                   <span>Meta</span>
                   {feature.meta && (
-                    <span className="rounded-full bg-outline-variant px-1.5 text-[10px] font-bold tabular-nums">
-                      {countMetaItems(feature.meta)}
-                    </span>
+                    <span className={chromeCountBadge}>{countMetaItems(feature.meta)}</span>
                   )}
                 </button>
               </nav>
@@ -326,12 +378,13 @@ export default function App() {
         <>
           <button
             type="button"
-            className="fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm motion-safe:transition-opacity"
+            className={`fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm motion-safe:transition-opacity ${focusRingOnScrim}`}
             aria-label="Close feature list"
             onClick={() => setDrawerOpen(false)}
           />
           <div
             id="feature-drawer"
+            {...drawerSwipeHandlers}
             className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
             role="dialog"
             aria-modal="true"

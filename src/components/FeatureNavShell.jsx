@@ -3,10 +3,13 @@
  * Uses surface tokens only (no sidebar-* palette). Theme toggle is only here (rail + drawer), not in the main app bar.
  */
 import ThemeToggle from '../theme/ThemeToggle'
+import {
+  chromeCountBadge,
+  chromeCountBadgeRailActive,
+  chromeCountBadgeRailMuted,
+} from '../theme/chromeStyles'
+import { focusRingButton, focusRingInput } from '../theme/focusStyles'
 import { formatFeatureName } from '../featureUtils'
-
-const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container'
 
 const FOOTER_HINT = 'Drop folders into feature-reviews/ to add more'
 
@@ -47,7 +50,7 @@ export default function FeatureNavShell({
           </span>
           <button
             type="button"
-            className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container text-on-surface hover:bg-surface-container-high ${focusRing}`}
+            className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container text-on-surface hover:bg-surface-container-high ${focusRingButton}`}
             onClick={onClose}
             aria-label="Close feature list"
           >
@@ -109,7 +112,7 @@ export default function FeatureNavShell({
           </span>
           <input
             id="feature-filter-input"
-            className={`h-11 w-full rounded-lg border border-outline bg-surface-container-high py-2 pl-10 text-base text-on-surface shadow-sm placeholder:text-on-surface-muted motion-safe:transition-colors hover:border-outline-variant focus-visible:border-primary/50 focus-visible:bg-surface-container sm:text-sm ${focusRing} ${showClear ? 'pr-11' : 'pr-3'}`}
+            className={`h-11 w-full rounded-lg border border-outline bg-surface-container-high py-2 pl-10 text-base text-on-surface shadow-sm placeholder:text-on-surface-muted hover:border-outline-variant sm:text-sm ${focusRingInput} ${showClear ? 'pr-11' : 'pr-3'}`}
             type="text"
             inputMode="search"
             role="searchbox"
@@ -125,7 +128,7 @@ export default function FeatureNavShell({
           {showClear && (
             <button
               type="button"
-              className={`absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 touch-manipulation items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface sm:h-9 sm:w-9 ${focusRing}`}
+              className={`absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 touch-manipulation items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface sm:h-9 sm:w-9 ${focusRingButton}`}
               onClick={() => onQueryChange('')}
               aria-label="Clear search"
             >
@@ -154,7 +157,8 @@ export default function FeatureNavShell({
                     key={f.id}
                     type="button"
                     onClick={() => onSelect(f.id)}
-                    className={`flex min-h-11 w-full touch-manipulation items-center gap-2 rounded-lg border border-transparent px-2.5 py-2 text-left text-sm font-medium motion-safe:transition-colors ${focusRing} ${
+                    aria-current={active ? 'page' : undefined}
+                    className={`flex min-h-11 w-full touch-manipulation items-center gap-2 rounded-lg border border-transparent px-2.5 py-2 text-left text-sm font-medium motion-safe:transition-colors ${focusRingButton} ${
                       active
                         ? 'border-l-[3px] border-l-primary bg-primary/10 pl-[7px] text-on-surface'
                         : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
@@ -167,8 +171,8 @@ export default function FeatureNavShell({
                     <span className="min-w-0 flex-1 truncate">{formatFeatureName(f.meta?.feature ?? f.id)}</span>
                     {f.meta && (
                       <span
-                        className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-                          active ? 'bg-primary/15 text-primary' : 'bg-surface-container-high text-on-surface-variant'
+                        className={`${chromeCountBadge} shrink-0 ${
+                          active ? chromeCountBadgeRailActive : chromeCountBadgeRailMuted
                         }`}
                       >
                         {(f.meta.files_involved?.length ?? 0)}f
