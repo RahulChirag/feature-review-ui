@@ -17,14 +17,21 @@ export default function DocViewer({ content }) {
             const match = /language-(\w+)/.exec(className || '')
             if (match) {
               return (
-                <SyntaxHighlighter
-                  style={vscDarkPlus}
-                  language={match[1]}
-                  PreTag="pre"
-                  customStyle={{ borderRadius: '8px', fontSize: '13px', margin: '16px 0' }}
-                >
-                  {String(children).replace(/\n$/, '')}
-                </SyntaxHighlighter>
+                <div className="doc-code-block">
+                  <SyntaxHighlighter
+                    style={vscDarkPlus}
+                    language={match[1]}
+                    PreTag="pre"
+                    customStyle={{
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      margin: 0,
+                      maxWidth: '100%',
+                    }}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                </div>
               )
             }
             return (

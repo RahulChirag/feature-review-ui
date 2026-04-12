@@ -7,7 +7,13 @@
   padding: 0;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
+  height: 100%;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -64,7 +70,8 @@ body {
    ============================================= */
 .app-shell {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  max-height: 100dvh;
   min-height: 0;
   overflow: hidden;
   background: var(--main-bg);
@@ -251,9 +258,57 @@ body {
 
 .feature-meta-row {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px 14px;
   margin-bottom: 14px;
+}
+
+.feature-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.feature-actions--mobile {
+  margin-left: 0;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--header-bg);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.download-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: var(--text);
+}
+
+.download-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.download-muted {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 6px 0;
 }
 
 .feature-title {
@@ -262,6 +317,8 @@ body {
   color: var(--text);
   letter-spacing: -0.03em;
   line-height: 1.1;
+  min-width: 0;
+  flex: 1 1 200px;
 }
 
 .feature-date-badge {
@@ -373,11 +430,27 @@ body {
    ============================================= */
 .doc-viewer {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   background: var(--content-bg);
   border-radius: var(--r);
   padding: 36px 44px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border);
+}
+
+.doc-code-block {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 16px 0;
+  border-radius: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.doc-code-block pre {
+  margin: 0 !important;
 }
 
 /* Headings */
@@ -464,6 +537,8 @@ body {
   padding: 1px 6px;
   border-radius: var(--r-xs);
   border: 1px solid #e5e7eb;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Blockquote */
@@ -525,6 +600,8 @@ body {
   flex-direction: column;
   gap: 18px;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* Stats */
@@ -635,6 +712,7 @@ button.section-header:hover {
   border-bottom: 1px solid var(--border-light);
   transition: background 0.1s;
   flex-wrap: wrap;
+  min-width: 0;
 }
 .entry-item:last-child { border-bottom: none; }
 .entry-item:hover { background: #fafafa; }
@@ -648,7 +726,9 @@ button.section-header:hover {
   padding: 2px 7px;
   border-radius: var(--r-xs);
   border: 1px solid #e5e7eb;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .entry-arrow {
@@ -661,6 +741,9 @@ button.section-header:hover {
   font-size: 13px;
   color: var(--accent);
   font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .entry-desc {
@@ -691,6 +774,7 @@ button.section-header:hover {
   cursor: default;
   transition: background 0.1s, border-color 0.1s;
   max-width: 100%;
+  min-width: 0;
 }
 .file-chip:hover {
   background: var(--accent-pale);
@@ -719,17 +803,19 @@ button.section-header:hover {
   font-weight: 600;
   font-family: monospace;
   color: var(--text);
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .file-chip-dir {
   font-size: 11px;
   color: var(--text-muted);
   font-family: monospace;
-  white-space: nowrap;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  max-width: min(200px, 100%);
 }
 
 /* API items */
@@ -741,6 +827,7 @@ button.section-header:hover {
   border-bottom: 1px solid var(--border-light);
   transition: background 0.1s;
   flex-wrap: wrap;
+  min-width: 0;
 }
 .api-item:last-child { border-bottom: none; }
 .api-item:hover { background: #fafafa; }
@@ -765,6 +852,9 @@ button.section-header:hover {
   font-size: 12.5px;
   color: var(--text);
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .api-desc {
@@ -882,6 +972,7 @@ button.section-header:hover {
   gap: 10px;
   padding: 5px 20px 5px 38px;
   transition: background 0.1s;
+  min-width: 0;
 }
 .fn-item:hover { background: #fafafa; }
 
@@ -898,6 +989,9 @@ button.section-header:hover {
   font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
   font-size: 12.5px;
   color: var(--accent);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* =============================================
@@ -1157,14 +1251,11 @@ button.section-header:hover {
 }
 
 @media (max-width: 768px) {
-  body {
-    overflow: auto;
-  }
-
   .app-shell {
     flex-direction: column;
-    height: 100dvh;
-    min-height: 100dvh;
+    height: 100%;
+    max-height: 100dvh;
+    min-height: 0;
   }
 
   .sidebar--desktop {

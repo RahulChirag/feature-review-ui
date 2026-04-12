@@ -4,6 +4,7 @@ import DocViewer from './components/DocViewer'
 import MetaViewer from './components/MetaViewer'
 import FeatureNav from './components/FeatureNav'
 import { filterFeatures, formatFeatureName } from './featureUtils'
+import { downloadTextFile } from './downloadUtils'
 
 const mdModules = import.meta.glob('../feature-reviews/**/*.md', {
   query: '?raw',
@@ -13,6 +14,25 @@ const mdModules = import.meta.glob('../feature-reviews/**/*.md', {
 const metaModules = import.meta.glob('../feature-reviews/**/meta.json', {
   eager: true,
 })
+
+function parseGeneratedDate(meta) {
+  const raw = meta?.generated_date
+  if (raw == null || raw === '') return null
+  const t = Date.parse(String(raw))
+  return Number.isNaN(t) ? null : t
+}
+
+function compareFeaturesByGeneratedDate(a, b) {
+  const ta = parseGeneratedDate(a.meta)
+  const tb = parseGeneratedDate(b.meta)
+  if (ta !== null && tb !== null) {
+    if (tb !== ta) return tb - ta
+    return a.id.localeCompare(b.id)
+  }
+  if (ta !== null && tb === null) return -1
+  if (ta === null && tb !== null) return 1
+  return a.id.localeCompare(b.id)
+}
 
 function buildFeatures() {
   const map = {}
@@ -29,9 +49,7 @@ function buildFeatures() {
     map[folder].meta = mod.default ?? mod
   })
 
-  return Object.values(map).sort((a, b) =>
-    (a.meta?.feature ?? a.id).localeCompare(b.meta?.feature ?? b.id)
-  )
+  return Object.values(map).sort(compareFeaturesByGeneratedDate)
 }
 
 const features = buildFeatures()
@@ -83,6 +101,20 @@ export default function App() {
     setDrawerOpen(false)
   }
 
+  function handleDownloadMd() {
+    if (!feature?.doc) return
+    downloadTextFile(`${feature.id}.md`, feature.doc, 'text/markdown;charset=utf-8')
+  }
+
+  function handleDownloadMeta() {
+    if (!feature?.meta) return
+    downloadTextFile(
+      `${feature.id}-meta.json`,
+      JSON.stringify(feature.meta, null, 2),
+      'application/json;charset=utf-8'
+    )
+  }
+
   return (
     <div className={`app-shell${feature ? ' app-shell--has-feature' : ''}`}>
       <Sidebar
@@ -99,34 +131,70 @@ export default function App() {
           <>
             <header className="feature-header">
               {isMobile ? (
-                <div className="mobile-feature-toolbar">
-                  <button
-                    type="button"
-                    className="mobile-open-features-btn"
-                    onClick={() => setDrawerOpen(true)}
-                    aria-expanded={drawerOpen}
-                    aria-controls="feature-drawer"
-                  >
-                    <MenuIcon />
-                    Features
-                  </button>
-                  <div className="mobile-feature-heading">
-                    <h1 className="feature-title feature-title--toolbar">
-                      {formatFeatureName(feature.meta?.feature ?? feature.id)}
-                    </h1>
-                    {feature.meta?.generated_date && (
-                      <span className="feature-date-badge feature-date-badge--toolbar">
-                        Generated {feature.meta.generated_date}
-                      </span>
+                <>
+                  <div className="mobile-feature-toolbar">
+                    <button
+                      type="button"
+                      className="mobile-open-features-btn"
+                      onClick={() => setDrawerOpen(true)}
+                      aria-expanded={drawerOpen}
+                      aria-controls="feature-drawer"
+                    >
+                      <MenuIcon />
+                      Features
+                    </button>
+                    <div className="mobile-feature-heading">
+                      <h1 className="feature-title feature-title--toolbar">
+                        {formatFeatureName(feature.meta?.feature ?? feature.id)}
+                      </h1>
+                      {feature.meta?.generated_date && (
+                        <span className="feature-date-badge feature-date-badge--toolbar">
+                          Generated {feature.meta.generated_date}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="feature-actions feature-actions--mobile">
+                    <button
+                      type="button"
+                      className="download-btn"
+                      onClick={handleDownloadMd}
+                      disabled={!feature.doc}
+                    >
+                      Download .md
+                    </button>
+                    {feature.meta ? (
+                      <button type="button" className="download-btn" onClick={handleDownloadMeta}>
+                        Download meta.json
+                      </button>
+                    ) : (
+                      <span className="download-muted">No meta.json to download</span>
                     )}
                   </div>
-                </div>
+                </>
               ) : (
                 <div className="feature-meta-row">
                   <h1 className="feature-title">{formatFeatureName(feature.meta?.feature ?? feature.id)}</h1>
                   {feature.meta?.generated_date && (
                     <span className="feature-date-badge">Generated {feature.meta.generated_date}</span>
                   )}
+                  <div className="feature-actions">
+                    <button
+                      type="button"
+                      className="download-btn"
+                      onClick={handleDownloadMd}
+                      disabled={!feature.doc}
+                    >
+                      Download .md
+                    </button>
+                    {feature.meta ? (
+                      <button type="button" className="download-btn" onClick={handleDownloadMeta}>
+                        Download meta.json
+                      </button>
+                    ) : (
+                      <span className="download-muted">No meta.json to download</span>
+                    )}
+                  </div>
                 </div>
               )}
               <nav className="tab-bar tab-bar--header" aria-label="Documentation and metadata">
