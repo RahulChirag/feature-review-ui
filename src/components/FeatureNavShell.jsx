@@ -10,6 +10,21 @@ const focusRing =
 
 const FOOTER_HINT = 'Drop folders into feature-reviews/ to add more'
 
+function SearchIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+      />
+      <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M16 16l4.5 4.5" />
+    </svg>
+  )
+}
+
 export default function FeatureNavShell({
   variant = 'rail',
   onClose,
@@ -76,34 +91,51 @@ export default function FeatureNavShell({
         <ThemeToggle variant="compact" className="w-full" />
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 pt-1">
-        <span className="shrink-0 px-2 pb-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-2 pt-2">
+        <span className="shrink-0 pb-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
           Features
         </span>
-        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="relative mb-2 px-1">
-            <input
-              className={`min-h-11 w-full rounded-lg border border-outline bg-surface-container-high py-2.5 pl-3 pr-10 text-sm text-on-surface placeholder:text-on-surface-muted ${focusRing} motion-safe:transition-colors`}
-              type="search"
-              placeholder="Filter features…"
-              value={query}
-              onChange={(e) => onQueryChange(e.target.value)}
-              aria-label="Filter features"
-              autoComplete="off"
-              spellCheck="false"
-            />
-            {showClear && (
-              <button
-                type="button"
-                className={`absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-lg leading-none text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface ${focusRing}`}
-                onClick={() => onQueryChange('')}
-                aria-label="Clear filter"
-              >
+
+        {/* Search stays fixed; only the list below scrolls */}
+        <div className="relative mb-3 shrink-0">
+          <label htmlFor="feature-filter-input" className="sr-only">
+            Filter features by name
+          </label>
+          <span
+            className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-on-surface-muted"
+            aria-hidden
+          >
+            <SearchIcon />
+          </span>
+          <input
+            id="feature-filter-input"
+            className={`h-11 w-full rounded-lg border border-outline bg-surface-container-high py-2 pl-10 text-sm text-on-surface shadow-sm placeholder:text-on-surface-muted motion-safe:transition-colors hover:border-outline-variant focus-visible:border-primary/50 focus-visible:bg-surface-container ${focusRing} ${showClear ? 'pr-10' : 'pr-3'}`}
+            type="search"
+            placeholder="Search features…"
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck="false"
+            enterKeyHint="search"
+          />
+          {showClear && (
+            <button
+              type="button"
+              className={`absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface ${focusRing}`}
+              onClick={() => onQueryChange('')}
+              aria-label="Clear search"
+            >
+              <span className="text-lg leading-none" aria-hidden>
                 ×
-              </button>
-            )}
-          </div>
-          <nav className="flex flex-col gap-0.5 pb-2" aria-label="Feature list">
+              </span>
+            </button>
+          )}
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden [-webkit-overflow-scrolling:touch]">
+          <nav className="flex flex-col gap-0.5 pb-1" aria-label="Feature list">
             {totalCount === 0 ? (
               <div className="px-2.5 py-3 text-xs leading-relaxed text-on-surface-muted">
                 No features found in feature-reviews/
