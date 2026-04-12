@@ -136,8 +136,10 @@ export default function App() {
     }`
 
   const tabMobile = (active) =>
-    `flex h-14 min-h-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 py-1 text-[11px] font-semibold leading-tight ${btnFocus} ${
-      active ? 'text-primary' : 'text-on-surface-variant'
+    `relative flex h-14 min-h-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 border-t-2 py-1 text-[11px] font-semibold leading-tight motion-safe:transition-colors ${btnFocus} ${
+      active
+        ? 'border-primary bg-primary/10 text-primary [&_svg]:stroke-primary'
+        : 'border-transparent text-on-surface-variant'
     }`
 
   return (
@@ -204,37 +206,46 @@ export default function App() {
               </nav>
             </div>
 
-            {/* Mobile: 56dp app bar + thin export row */}
-            <div className="z-10 flex shrink-0 flex-col border-b border-outline bg-surface-container md:hidden">
-              <div className="flex h-14 min-h-[56px] items-center gap-3 px-4">
+            {/* Mobile: single 56dp row — menu, title, icon downloads, compact theme */}
+            <div className="z-10 flex h-14 min-h-[56px] shrink-0 items-center gap-2 border-b border-outline bg-surface-container px-3 md:hidden">
+              <button
+                type="button"
+                className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm ${btnFocus}`}
+                onClick={() => setDrawerOpen(true)}
+                aria-expanded={drawerOpen}
+                aria-controls="feature-drawer"
+                aria-label="Open feature list"
+              >
+                <MenuIcon />
+              </button>
+              <h1 className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface">
+                {formatFeatureName(feature.meta?.feature ?? feature.id)}
+              </h1>
+              <div
+                className="flex max-w-[min(11.5rem,46vw)] shrink-0 snap-x snap-mandatory items-center gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] motion-safe:scroll-smooth [&::-webkit-scrollbar]:hidden sm:max-w-none"
+                aria-label="Downloads and theme"
+              >
                 <button
                   type="button"
-                  className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm ${btnFocus}`}
-                  onClick={() => setDrawerOpen(true)}
-                  aria-expanded={drawerOpen}
-                  aria-controls="feature-drawer"
-                  aria-label="Open feature list"
+                  className={`flex h-10 w-10 shrink-0 snap-start touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
+                  onClick={handleDownloadMd}
+                  disabled={!feature.doc}
+                  title="Download Markdown"
                 >
-                  <MenuIcon />
+                  <span className="sr-only">Download Markdown</span>
+                  <DocIcon />
                 </button>
-                <h1 className="min-w-0 flex-1 truncate text-lg font-bold leading-tight text-on-surface">
-                  {formatFeatureName(feature.meta?.feature ?? feature.id)}
-                </h1>
-                <div className="max-w-[min(12rem,42vw)] shrink-0 origin-right scale-[0.92]">
-                  <ThemeToggle />
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 border-t border-outline/60 px-4 py-2.5">
-                <button type="button" className={downloadPill} onClick={handleDownloadMd} disabled={!feature.doc}>
-                  .md
+                <button
+                  type="button"
+                  className={`flex h-10 w-10 shrink-0 snap-start touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container-high text-on-surface shadow-sm disabled:opacity-40 ${btnFocus}`}
+                  onClick={handleDownloadMeta}
+                  disabled={!feature.meta}
+                  title={feature.meta ? 'Download meta.json' : 'No meta.json'}
+                >
+                  <span className="sr-only">Download meta.json</span>
+                  <JsonDownloadIcon />
                 </button>
-                {feature.meta ? (
-                  <button type="button" className={downloadPill} onClick={handleDownloadMeta}>
-                    meta.json
-                  </button>
-                ) : (
-                  <span className="text-xs text-on-surface-muted">No meta.json</span>
-                )}
+                <ThemeToggle variant="compact" className="shrink-0 snap-start" />
               </div>
             </div>
 
@@ -255,7 +266,7 @@ export default function App() {
             {/* Bottom nav: z-40 */}
             {isMobile && (
               <nav
-                className="fixed bottom-0 left-0 right-0 z-40 flex h-14 border-t border-outline bg-surface-container/95 backdrop-blur-md supports-[backdrop-filter]:bg-surface-container/90"
+                className="fixed bottom-0 left-0 right-0 z-40 flex h-14 border-t border-outline bg-surface-container/95 shadow-[var(--shadow-nav)] backdrop-blur-md supports-[backdrop-filter]:bg-surface-container/90"
                 style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
                 aria-label="Documentation and metadata"
               >
@@ -361,6 +372,16 @@ function DocIcon() {
       <polyline points="14 2 14 8 20 8" />
       <line x1="16" y1="13" x2="8" y2="13" />
       <line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
+  )
+}
+
+function JsonDownloadIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 9V6a2 2 0 0 1 2-2h2M4 15v3a2 2 0 0 0 2 2h2M20 9V6a2 2 0 0 0-2-2h-2M20 15v3a2 2 0 0 1-2 2h-2" />
+      <line x1="9" y1="9" x2="9" y2="15" />
+      <line x1="15" y1="9" x2="15" y2="15" />
     </svg>
   )
 }
