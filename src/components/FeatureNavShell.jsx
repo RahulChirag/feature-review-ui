@@ -73,7 +73,7 @@ export default function FeatureNavShell({
       )}
 
       <div className="shrink-0 border-b border-outline px-3 py-3">
-        <ThemeToggle variant="compact" className="w-full justify-center" />
+        <ThemeToggle variant="compact" className="w-full" />
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 pt-1">

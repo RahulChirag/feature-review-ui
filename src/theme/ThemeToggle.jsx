@@ -6,6 +6,10 @@ const ring =
 const ringMain =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface motion-safe:transition-shadow'
 
+/** Focus ring for compact control on surface-container (nav shell) */
+const ringCompact =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container motion-safe:transition-colors'
+
 export default function ThemeToggle({ variant = 'default', className = '' }) {
   const { preference, setPreference } = useTheme()
 
@@ -14,13 +18,13 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
       <div
         role="group"
         aria-label="Color theme"
-        className={`inline-flex shrink-0 items-center rounded-lg border border-outline bg-surface-container p-0.5 shadow-sm ${className}`}
+        className={`grid w-full grid-cols-3 gap-0.5 rounded-lg border border-outline bg-surface-container-high p-0.5 shadow-sm ${className}`}
       >
         <CompactThemeBtn
           label="Light theme"
           pressed={preference === 'light'}
           onClick={() => setPreference('light')}
-          r={ringMain}
+          r={ringCompact}
         >
           <SunIcon />
         </CompactThemeBtn>
@@ -28,7 +32,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           label="Dark theme"
           pressed={preference === 'dark'}
           onClick={() => setPreference('dark')}
-          r={ringMain}
+          r={ringCompact}
         >
           <MoonIcon />
         </CompactThemeBtn>
@@ -36,7 +40,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           label="Match system theme"
           pressed={preference === 'system'}
           onClick={() => setPreference('system')}
-          r={ringMain}
+          r={ringCompact}
         >
           <MonitorIcon />
         </CompactThemeBtn>
@@ -93,13 +97,15 @@ function CompactThemeBtn({ label, pressed, onClick, children, r }) {
       aria-pressed={pressed}
       aria-label={label}
       onClick={onClick}
-      className={`flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-md motion-safe:transition-colors sm:h-10 sm:w-10 ${r} ${
+      className={`flex min-h-9 min-w-0 touch-manipulation items-center justify-center rounded-md py-1.5 ${r} motion-safe:transition-colors ${
         pressed
           ? 'bg-primary-container text-on-primary-container shadow-sm'
-          : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+          : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
       }`}
     >
-      {children}
+      <span className="flex h-[18px] w-[18px] items-center justify-center [&_svg]:h-[18px] [&_svg]:w-[18px]">
+        {children}
+      </span>
     </button>
   )
 }
@@ -128,7 +134,7 @@ function ThemeBtn({ label, pressed, onClick, children, isSidebar, r }) {
 
 function SunIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <circle cx="12" cy="12" r="4" />
       <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
     </svg>
@@ -137,7 +143,7 @@ function SunIcon() {
 
 function MoonIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   )
@@ -145,7 +151,7 @@ function MoonIcon() {
 
 function MonitorIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
       <line x1="8" y1="21" x2="16" y2="21" />
       <line x1="12" y1="17" x2="12" y2="21" />
