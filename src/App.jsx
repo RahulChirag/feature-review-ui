@@ -204,7 +204,6 @@ export default function App() {
     <div className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[auto_minmax(0,1fr)]">
       <Sidebar
         open={desktopSidebarOpen}
-        onRailCollapse={() => setDesktopSidebarOpen(false)}
         features={filteredFeatures}
         totalCount={features.length}
         activeId={activeId}
@@ -235,7 +234,7 @@ export default function App() {
                   <span className="sr-only">
                     {desktopSidebarOpen ? 'Hide feature list' : 'Show feature list'}
                   </span>
-                  {desktopSidebarOpen ? <DesktopSidebarHideIcon /> : <DesktopSidebarShowIcon />}
+                  {desktopSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                 </motion.button>
                 <div className="min-w-0 flex-1">
                   <motion.h1
@@ -531,26 +530,19 @@ function countMetaItems(meta) {
   )
 }
 
-function DesktopSidebarHideIcon() {
+/** Desktop sidebar: chevron tucks the rail away / brings it back (matches stroke weight of MenuIcon). */
+function ChevronLeftIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <rect x="3" y="3" width="7" height="18" rx="1" />
-      <path d="M14 9l4 3-4 3" />
-      <line x1="14" y1="6" x2="21" y2="6" />
-      <line x1="14" y1="12" x2="21" y2="12" />
-      <line x1="14" y1="18" x2="21" y2="18" />
+      <polyline points="15 18 9 12 15 6" />
     </svg>
   )
 }
 
-function DesktopSidebarShowIcon() {
+function ChevronRightIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <rect x="14" y="3" width="7" height="18" rx="1" />
-      <path d="M10 9L6 12l4 3" />
-      <line x1="10" y1="6" x2="3" y2="6" />
-      <line x1="10" y1="12" x2="3" y2="12" />
-      <line x1="10" y1="18" x2="3" y2="18" />
+      <polyline points="9 18 15 12 9 6" />
     </svg>
   )
 }

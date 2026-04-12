@@ -66,7 +66,7 @@ export default function FeatureNavShell({
       )}
 
       {!isDrawer && (
-        <div className="flex h-16 shrink-0 items-center gap-2 border-b border-outline px-3 sm:gap-3 sm:px-4">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-outline px-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-container text-primary shadow-sm">
             <svg
               width="18"
@@ -91,18 +91,6 @@ export default function FeatureNavShell({
               {totalCount} feature{totalCount !== 1 ? 's' : ''}
             </div>
           </div>
-          {onRailCollapse && (
-            <motion.button
-              type="button"
-              className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-lg border border-outline bg-surface-container-high text-on-surface hover:bg-surface-container ${focusRingButton}`}
-              onClick={onRailCollapse}
-              aria-label="Hide feature list"
-              title="Hide feature list"
-              whileTap={tapScale(!!prefersReducedMotion)}
-            >
-              <RailCollapseIcon />
-            </motion.button>
-          )}
         </div>
       )}
 

@@ -3,7 +3,7 @@ import FeatureNavShell from './FeatureNavShell'
 import { transitionDesktopSidebar, transitionReducedOpacity } from '../theme/motionTokens'
 
 /** Desktop feature rail — same navigation UI as mobile drawer ([`FeatureNavShell`](./FeatureNavShell.jsx)). */
-export default function Sidebar({ open = true, onRailCollapse, ...props }) {
+export default function Sidebar({ open = true, ...props }) {
   const prefersReducedMotion = useReducedMotion()
 
   return (
@@ -19,7 +19,7 @@ export default function Sidebar({ open = true, onRailCollapse, ...props }) {
       aria-hidden={!open}
     >
       <div className="flex h-full min-h-0 w-[260px] flex-col overflow-hidden">
-        <FeatureNavShell variant="rail" onRailCollapse={onRailCollapse} {...props} />
+        <FeatureNavShell variant="rail" {...props} />
       </div>
     </motion.aside>
   )
