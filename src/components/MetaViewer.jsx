@@ -5,29 +5,47 @@ import { focusRingButton } from '../theme/focusStyles'
 const strSort = (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })
 
 const STAT_DEFS = [
-  { key: 'files', label: 'Files', icon: '📁', valueClass: 'text-violet-600 dark:text-violet-400' },
-  { key: 'entry', label: 'Entry Points', icon: '🚀', valueClass: 'text-sky-600 dark:text-sky-400' },
-  { key: 'api', label: 'External APIs', icon: '🔌', valueClass: 'text-emerald-600 dark:text-emerald-400' },
-  { key: 'db', label: 'DB Operations', icon: '🗄️', valueClass: 'text-amber-600 dark:text-amber-400' },
-  { key: 'fn', label: 'Functions', icon: '⚙️', valueClass: 'text-red-600 dark:text-red-400' },
+  { key: 'files', label: 'Files', icon: '📁', valueClass: 'text-primary' },
+  { key: 'entry', label: 'Entry Points', icon: '🚀', valueClass: 'text-primary' },
+  { key: 'api', label: 'External APIs', icon: '🔌', valueClass: 'text-primary' },
+  { key: 'db', label: 'DB Operations', icon: '🗄️', valueClass: 'text-primary' },
+  { key: 'fn', label: 'Functions', icon: '⚙️', valueClass: 'text-primary' },
 ]
 
+/** Code-ish extensions: primary tint */
+const EXT_BADGE_CODE =
+  'rounded-sm border border-outline bg-primary/12 px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-primary'
+/** Data / config */
+const EXT_BADGE_DATA =
+  'rounded-sm border border-outline bg-primary-container/45 px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-on-primary-container'
+/** Docs / prose */
+const EXT_BADGE_DOC =
+  'rounded-sm border border-outline bg-outline-variant px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-on-surface-variant'
+
 const EXT_BADGE = {
-  py: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
-  js: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
-  jsx: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
-  ts: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
-  tsx: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
-  json: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200',
-  md: 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100',
+  py: EXT_BADGE_CODE,
+  js: EXT_BADGE_CODE,
+  jsx: EXT_BADGE_CODE,
+  ts: EXT_BADGE_CODE,
+  tsx: EXT_BADGE_CODE,
+  json: EXT_BADGE_DATA,
+  md: EXT_BADGE_DOC,
 }
 
+/** Safe reads: elevated neutral surface */
+const METHOD_SAFE = 'border border-outline bg-surface-container-high px-1.5 py-0.5 text-on-surface'
+/** Writes: primary accent */
+const METHOD_WRITE = 'border border-outline bg-primary/12 px-1.5 py-0.5 text-primary'
+/** Destructive: stronger primary container */
+const METHOD_DELETE = 'border border-outline bg-primary-container/90 px-1.5 py-0.5 text-on-primary-container'
+
 const METHOD_BADGE = {
-  GET: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200',
-  POST: 'bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200',
-  PUT: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200',
-  DELETE: 'bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200',
-  PATCH: 'bg-pink-100 text-pink-900 dark:bg-pink-950 dark:text-pink-200',
+  GET: METHOD_SAFE,
+  HEAD: METHOD_SAFE,
+  POST: METHOD_WRITE,
+  PUT: METHOD_WRITE,
+  PATCH: METHOD_WRITE,
+  DELETE: METHOD_DELETE,
 }
 
 const MetaViewer = forwardRef(function MetaViewer({ meta }, ref) {
@@ -233,14 +251,14 @@ function FileChip({ path }) {
   const name = parts.at(-1)
   const dir = parts.slice(0, -1).join('/')
   const ext = name.split('.').at(-1)
-  const badge = EXT_BADGE[ext] ?? 'bg-surface-container-high text-on-surface dark:bg-surface-container-high'
+  const badge = EXT_BADGE[ext] ?? 'rounded-sm border border-outline bg-surface-container-high px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-on-surface'
 
   return (
     <div
       className="inline-flex min-w-0 max-w-full items-center gap-2 border border-outline bg-surface-container-high px-3 py-2 text-xs motion-safe:transition-colors hover:border-primary/30 hover:bg-primary-container/20"
       title={path}
     >
-      <span className={`shrink-0 px-1 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${badge}`}>
+      <span className={`shrink-0 ${badge}`}>
         {ext}
       </span>
       <span className="min-w-0 break-all font-mono font-semibold text-on-surface">{name}</span>
@@ -261,7 +279,7 @@ function ApiItem({ raw }) {
   const path = parenMatch ? parenMatch[1] : rest
   const desc = parenMatch ? parenMatch[2] : null
 
-  const mClass = METHOD_BADGE[method] ?? 'bg-surface-container-high text-on-surface'
+  const mClass = METHOD_BADGE[method] ?? METHOD_SAFE
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
@@ -301,12 +319,12 @@ function DbItem({ raw }) {
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-2 border-b border-outline-variant px-4 py-3 last:border-b-0 md:px-5">
       {model && (
-        <span className="shrink-0 border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+        <span className="shrink-0 border border-outline bg-primary/12 px-2 py-0.5 font-mono text-xs font-bold text-primary">
           {model}
         </span>
       )}
       {ops.length > 0 && (
-        <span className="shrink-0 border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-mono text-xs font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        <span className="shrink-0 border border-outline bg-surface-container-high px-1.5 py-0.5 font-mono text-xs font-semibold text-on-surface-variant">
           {ops.join(' ')}
         </span>
       )}

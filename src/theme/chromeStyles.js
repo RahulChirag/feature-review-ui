@@ -12,7 +12,7 @@ export const chromeMetadataStrip = 'truncate text-xs text-on-surface-variant'
 
 /** Unified numeric chip: tabs, bottom nav, MetaViewer section counts */
 export const chromeCountBadge =
-  'inline-flex min-h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full bg-outline-variant px-2 py-0.5 text-[11px] font-bold tabular-nums text-on-surface-variant dark:bg-surface-container-high'
+  'inline-flex min-h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full bg-outline-variant px-2 py-0.5 text-[11px] font-bold tabular-nums text-on-surface-variant dark:bg-surface-container dark:text-on-surface-variant'
 
 /** Feature rail list: file count next to title */
 export const chromeCountBadgeRailActive = 'bg-primary/15 text-primary'

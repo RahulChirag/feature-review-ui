@@ -12,7 +12,7 @@ function mergeClass(base, extra) {
   return [base, extra].filter(Boolean).join(' ')
 }
 
-/* Full-width column; outer viewer card has square corners. `id` comes from rehype-slug via ...props */
+/* Full-width column; sits flush on main surface (no nested card). `id` comes from rehype-slug via ...props */
 const mdComponents = {
   h1: ({ children, className, ...props }) => (
     <h1
@@ -110,7 +110,7 @@ const DocViewer = forwardRef(function DocViewer({ content }, ref) {
 
   if (!content) {
     return (
-      <div className="border border-outline bg-surface-container px-6 py-8 text-sm text-on-surface-muted">
+      <div className="px-6 py-8 text-sm text-on-surface-muted">
         No documentation file found for this feature.
       </div>
     )
@@ -119,7 +119,7 @@ const DocViewer = forwardRef(function DocViewer({ content }, ref) {
   const codeFontSize = '15px'
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words border border-outline bg-surface-container px-4 py-6 text-on-surface md:px-8 md:py-8 lg:px-10">
+    <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words px-4 py-6 text-on-surface md:px-8 md:py-8 lg:px-10">
       <div ref={ref} className="doc-markdown-root min-w-0">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
@@ -130,7 +130,7 @@ const DocViewer = forwardRef(function DocViewer({ content }, ref) {
               const match = /language-(\w+)/.exec(className || '')
               if (match) {
                 return (
-                  <div className="my-4 w-full max-w-none overflow-x-auto border border-outline [-webkit-overflow-scrolling:touch] md:overflow-hidden">
+                  <div className="my-4 w-full max-w-none overflow-x-auto border border-code-border bg-code-bg [-webkit-overflow-scrolling:touch] md:overflow-hidden">
                     <SyntaxHighlighter
                       style={codeStyle}
                       language={match[1]}
@@ -141,6 +141,8 @@ const DocViewer = forwardRef(function DocViewer({ content }, ref) {
                         fontSize: codeFontSize,
                         maxWidth: '100%',
                         padding: '1rem 1rem',
+                        backgroundColor: 'var(--app-code-bg)',
+                        color: 'var(--app-code-text)',
                       }}
                     >
                       {String(children).replace(/\n$/, '')}
