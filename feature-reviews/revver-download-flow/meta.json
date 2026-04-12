@@ -1,0 +1,88 @@
+{
+  "feature": "revver-download-flow",
+  "generated_date": "2026-04-12",
+  "files_involved": [
+    "backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "backend/app/services/file_processing_worker_service.py",
+    "backend/app/scheduler/file_worker_dag_manager.py",
+    "backend/app/config/settings.py",
+    "backend/app/config/settings.pdmiprod.json",
+    "backend/app/config/settings.sklsiprod.json"
+  ],
+  "entry_points": [
+    "backend/app/scheduler/file_worker_dag_manager.py -> file_worker_job() (line 39)",
+    "backend/app/services/file_processing_worker_service.py -> process_batch() (line 3039)",
+    "backend/app/services/file_processing_worker_service.py -> _download_file() (line 1251)",
+    "backend/app/services/document_fetchers/revver_document_fetcher.py -> download_file() (line 1865)"
+  ],
+  "apis_used": [
+    "External: Revver API POST /Token (OAuth ROPC grant_type=password)",
+    "External: Revver API POST /Token (grant_type=refresh_token)",
+    "External: Revver API GET /api/Authentication?accessToken=... (list accounts)",
+    "External: Revver API POST /api/Authentication (select account)",
+    "External: Revver API POST /api/OneTimeToken (short-lived download token)",
+    "External: Revver API GET /api/FileDownload/{fileId}/{oneTimeToken} (path-style download)",
+    "External: Revver API GET /api/FileDownload?id={fileId}&accessToken={oneTimeToken} (query-style fallback on 404)"
+  ],
+  "db_operations": [],
+  "functions_traced": [
+    "_get_access_token() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "_authenticate() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "_authenticate_inner() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "_refresh_access_token() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "_make_request() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "_make_request_with_retry() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "_get_one_time_token() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "download_file() in backend/app/services/document_fetchers/revver_document_fetcher.py",
+    "_download_file() in backend/app/services/file_processing_worker_service.py",
+    "process_batch() in backend/app/services/file_processing_worker_service.py",
+    "file_worker_job() in backend/app/scheduler/file_worker_dag_manager.py",
+    "sync_worker_jobs() in backend/app/scheduler/file_worker_dag_manager.py",
+    "_add_or_update_worker_job() in backend/app/scheduler/file_worker_dag_manager.py"
+  ],
+  "root_causes_identified": [
+    {
+      "id": 1,
+      "description": "download_file issues the final GET /api/FileDownload via a raw httpx.AsyncClient instead of _make_request_with_retry, so a 401 on the download URL bypasses the re-auth-and-retry branch entirely",
+      "file": "backend/app/services/document_fetchers/revver_document_fetcher.py",
+      "line": 1912,
+      "affects": "All Revver file downloads -- any 401 on FileDownload is terminal for that attempt"
+    },
+    {
+      "id": 2,
+      "description": "The only status-specific recovery inside download_file is a 404 path-to-query URL fallback; 401/403/429/5xx all fall through directly to raise_for_status()",
+      "file": "backend/app/services/document_fetchers/revver_document_fetcher.py",
+      "line": 1913,
+      "affects": "No server-driven recovery on the FileDownload GET except for 404"
+    },
+    {
+      "id": 3,
+      "description": "The pre-download token guard checks only the local _token_expiration clock; it does not validate the access token with Revver before reusing a cached fetcher",
+      "file": "backend/app/services/document_fetchers/revver_document_fetcher.py",
+      "line": 1884,
+      "affects": "A server-side revoked / invalidated access token continues to be sent as Bearer until its local clock expires"
+    },
+    {
+      "id": 4,
+      "description": "download_file still sends Authorization: Bearer <access_token> even though the OneTimeToken is embedded in the URL, so a bad access token causes 401 on the download regardless of OneTimeToken validity",
+      "file": "backend/app/services/document_fetchers/revver_document_fetcher.py",
+      "line": 1909,
+      "affects": "Couples FileDownload success to access-token validity instead of OneTimeToken validity alone"
+    },
+    {
+      "id": 5,
+      "description": "process_batch clears _fetcher_cache at the start of every batch and file_worker_job instantiates a brand-new FileProcessingWorkerService on every APScheduler firing, forcing a fresh OAuth handshake per Revver site per batch per worker",
+      "file": "backend/app/services/file_processing_worker_service.py",
+      "line": 3061,
+      "affects": "Token-state lifecycle is tied to batch duration; multiplied by N parallel workers (PDMI prod=4, SKLSI prod=10)"
+    },
+    {
+      "id": 6,
+      "description": "Parallel worker instances each own an independent _fetcher_cache and issue independent OAuth handshakes; _auth_lock is a ClassVar asyncio.Lock that only serialises within a single process/event loop",
+      "file": "backend/app/services/document_fetchers/revver_document_fetcher.py",
+      "line": 98,
+      "affects": "Multiple concurrent OAuth handshakes against the same Revver account from parallel workers are not serialised across processes or event loops"
+    }
+  ],
+  "description": "Traces the per-file Revver download flow from the APScheduler worker job through OAuth, OneTimeToken acquisition, and the final /api/FileDownload GET -- identifying that the final GET bypasses the _make_request_with_retry re-auth branch and that cached fetchers cannot detect a server-side token revocation, which together leave 401 responses on the FileDownload URL structurally unrecoverable within a single download attempt."
+}
