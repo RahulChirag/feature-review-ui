@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import DocViewer from './components/DocViewer'
 import MetaViewer from './components/MetaViewer'
-import FeatureNav from './components/FeatureNav'
+import FeatureNavShell from './components/FeatureNavShell'
 import ThemeToggle from './theme/ThemeToggle'
 import { filterFeatures, formatFeatureName } from './featureUtils'
 import { downloadTextFile } from './downloadUtils'
@@ -154,7 +154,7 @@ export default function App() {
     }`
 
   return (
-    <div className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[minmax(0,280px)_minmax(0,1fr)]">
+    <div className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
       <Sidebar
         features={filteredFeatures}
         totalCount={features.length}
@@ -337,42 +337,21 @@ export default function App() {
           />
           <div
             id="feature-drawer"
-            className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
+            className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="drawer-title"
           >
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-outline bg-surface-container-high px-4">
-              <span id="drawer-title" className="text-base font-semibold text-on-surface">
-                Features
-              </span>
-              <button
-                type="button"
-                className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container text-on-surface hover:bg-surface-container-high ${btnFocus}`}
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close"
-              >
-                <span className="text-2xl leading-none" aria-hidden>
-                  ×
-                </span>
-              </button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-3">
-              <FeatureNav
-                variant="sheet"
-                features={filteredFeatures}
-                totalCount={features.length}
-                activeId={activeId}
-                onSelect={selectFeature}
-                query={featureQuery}
-                onQueryChange={setFeatureQuery}
-              />
-            </div>
-            <div className="shrink-0 border-t border-outline px-4 py-3">
-              <p className="text-[11px] leading-snug text-on-surface-muted">
-                Drop folders into feature-reviews/ to add more
-              </p>
-            </div>
+            <FeatureNavShell
+              variant="drawer"
+              onClose={() => setDrawerOpen(false)}
+              features={filteredFeatures}
+              totalCount={features.length}
+              activeId={activeId}
+              onSelect={selectFeature}
+              query={featureQuery}
+              onQueryChange={setFeatureQuery}
+            />
           </div>
         </>
       )}
