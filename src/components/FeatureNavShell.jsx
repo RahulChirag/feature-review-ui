@@ -109,8 +109,10 @@ export default function FeatureNavShell({
           </span>
           <input
             id="feature-filter-input"
-            className={`h-11 w-full rounded-lg border border-outline bg-surface-container-high py-2 pl-10 text-sm text-on-surface shadow-sm placeholder:text-on-surface-muted motion-safe:transition-colors hover:border-outline-variant focus-visible:border-primary/50 focus-visible:bg-surface-container ${focusRing} ${showClear ? 'pr-10' : 'pr-3'}`}
-            type="search"
+            className={`h-11 w-full rounded-lg border border-outline bg-surface-container-high py-2 pl-10 text-base text-on-surface shadow-sm placeholder:text-on-surface-muted motion-safe:transition-colors hover:border-outline-variant focus-visible:border-primary/50 focus-visible:bg-surface-container sm:text-sm ${focusRing} ${showClear ? 'pr-11' : 'pr-3'}`}
+            type="text"
+            inputMode="search"
+            role="searchbox"
             placeholder="Search features…"
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
@@ -123,11 +125,11 @@ export default function FeatureNavShell({
           {showClear && (
             <button
               type="button"
-              className={`absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface ${focusRing}`}
+              className={`absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 touch-manipulation items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface sm:h-9 sm:w-9 ${focusRing}`}
               onClick={() => onQueryChange('')}
               aria-label="Clear search"
             >
-              <span className="text-lg leading-none" aria-hidden>
+              <span className="text-xl leading-none sm:text-lg" aria-hidden>
                 ×
               </span>
             </button>
