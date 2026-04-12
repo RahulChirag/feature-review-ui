@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { forwardRef, useMemo, useState } from 'react'
 import { chromeCountBadge, chromeMutedText } from '../theme/chromeStyles'
 import { focusRingButton } from '../theme/focusStyles'
 
@@ -30,10 +30,13 @@ const METHOD_BADGE = {
   PATCH: 'bg-pink-100 text-pink-900 dark:bg-pink-950 dark:text-pink-200',
 }
 
-export default function MetaViewer({ meta }) {
+const MetaViewer = forwardRef(function MetaViewer({ meta }, ref) {
   if (!meta) {
     return (
-      <div className={`rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm ${chromeMutedText}`}>
+      <div
+        ref={ref}
+        className={`rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm ${chromeMutedText}`}
+      >
         No metadata file found for this feature.
       </div>
     )
@@ -67,7 +70,7 @@ export default function MetaViewer({ meta }) {
   ]
 
   return (
-    <div className="flex min-w-0 max-w-full flex-col gap-6 md:gap-5">
+    <div ref={ref} className="flex min-w-0 max-w-full flex-col gap-6 md:gap-5">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-3">
         {stats.map((s) => (
           <StatCard key={s.key} icon={s.icon} value={s.value} label={s.label} valueClass={s.valueClass} />
@@ -75,7 +78,7 @@ export default function MetaViewer({ meta }) {
       </div>
 
       {sorted.entry_points.length > 0 && (
-        <Section title="Entry Points" icon="🚀" count={sorted.entry_points.length}>
+        <Section title="Entry Points" icon="🚀" count={sorted.entry_points.length} slug="entry-points">
           {sorted.entry_points.map((ep, i) => (
             <EntryItem key={i} raw={ep} />
           ))}
@@ -83,7 +86,7 @@ export default function MetaViewer({ meta }) {
       )}
 
       {sorted.files_involved.length > 0 && (
-        <Section title="Files Involved" icon="📁" count={sorted.files_involved.length} collapsible>
+        <Section title="Files Involved" icon="📁" count={sorted.files_involved.length} collapsible slug="files-involved">
           <div className="flex flex-wrap gap-2.5 p-5 md:p-5">
             {sorted.files_involved.map((f, i) => (
               <FileChip key={i} path={f} />
@@ -93,7 +96,7 @@ export default function MetaViewer({ meta }) {
       )}
 
       {sorted.apis_used.length > 0 && (
-        <Section title="External APIs" icon="🔌" count={sorted.apis_used.length} collapsible>
+        <Section title="External APIs" icon="🔌" count={sorted.apis_used.length} collapsible slug="external-apis">
           {sorted.apis_used.map((api, i) => (
             <ApiItem key={i} raw={api} />
           ))}
@@ -101,7 +104,7 @@ export default function MetaViewer({ meta }) {
       )}
 
       {sorted.db_operations.length > 0 && (
-        <Section title="Database Operations" icon="🗄️" count={sorted.db_operations.length} collapsible>
+        <Section title="Database Operations" icon="🗄️" count={sorted.db_operations.length} collapsible slug="database-operations">
           {sorted.db_operations.map((op, i) => (
             <DbItem key={i} raw={op} />
           ))}
@@ -109,13 +112,15 @@ export default function MetaViewer({ meta }) {
       )}
 
       {functions_traced.length > 0 && (
-        <Section title="Functions Traced" icon="⚙️" count={functions_traced.length} collapsible>
+        <Section title="Functions Traced" icon="⚙️" count={functions_traced.length} collapsible slug="functions-traced">
           <FunctionGroups items={sorted.functions_traced} />
         </Section>
       )}
     </div>
   )
-}
+})
+
+export default MetaViewer
 
 function StatCard({ icon, value, label, valueClass }) {
   return (
@@ -129,12 +134,23 @@ function StatCard({ icon, value, label, valueClass }) {
   )
 }
 
-function Section({ title, icon, count, children, collapsible = false }) {
+function Section({ title, icon, count, children, collapsible = false, slug }) {
   const [open, setOpen] = useState(true)
+
+  const outlineProps = slug
+    ? {
+        id: `meta-section-${slug}`,
+        'data-meta-section': true,
+        'data-meta-title': title,
+      }
+    : {}
 
   if (collapsible) {
     return (
-      <div className="overflow-hidden rounded-lg border border-outline bg-surface-container">
+      <div
+        {...outlineProps}
+        className={`overflow-hidden rounded-lg border border-outline bg-surface-container ${slug ? 'scroll-mt-6' : ''}`}
+      >
         <button
           type="button"
           className={`flex w-full items-center justify-between border-b border-outline bg-surface-container-high px-4 py-3 text-left hover:bg-outline-variant/30 md:px-5 ${focusRingButton}`}
@@ -160,7 +176,10 @@ function Section({ title, icon, count, children, collapsible = false }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-outline bg-surface-container">
+    <div
+      {...outlineProps}
+      className={`overflow-hidden rounded-lg border border-outline bg-surface-container ${slug ? 'scroll-mt-6' : ''}`}
+    >
       <div className="border-b border-outline bg-surface-container-high px-4 py-3 md:px-5">
         <div className="flex items-center gap-2 text-sm font-bold text-on-surface">
           <span aria-hidden>{icon}</span>

@@ -6,7 +6,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import Sidebar from './components/Sidebar'
 import DocViewer from './components/DocViewer'
+import DocOutline from './components/DocOutline'
 import MetaViewer from './components/MetaViewer'
+import MetaOutline from './components/MetaOutline'
 import FeatureNavShell from './components/FeatureNavShell'
 import {
   filterFeatures,
@@ -118,11 +120,13 @@ export default function App() {
 
   const docScrollRef = useRef(null)
   const metaScrollRef = useRef(null)
+  const docMarkdownRootRef = useRef(null)
+  const metaRootRef = useRef(null)
 
   const isMobile = useMediaQuery('(max-width: 768px)')
   const prefersReducedMotion = useReducedMotion()
 
-  const { mainSwipeHandlers, drawerSwipeHandlers } = useMobileDrawerSwipe({
+  const { mainSwipeHandlers, drawerSwipeHandlers, scrimSwipeHandlers } = useMobileDrawerSwipe({
     isMobile,
     drawerOpen,
     setDrawerOpen,
@@ -213,7 +217,9 @@ export default function App() {
       />
 
       <main
-        className="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface md:bg-surface"
+        className={`relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface touch-manipulation md:bg-surface ${
+          isMobile ? 'touch-pan-y' : ''
+        }`}
         {...(isMobile ? mainSwipeHandlers : {})}
       >
         {feature ? (
@@ -380,52 +386,76 @@ export default function App() {
             {/* Stacked scroll panels — instant visibility swap (opacity animation caused overlap/flicker) */}
             <div className="relative min-h-0 flex-1 overflow-hidden">
               <div
-                ref={docScrollRef}
-                className={`absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
+                className={`absolute inset-0 flex min-h-0 flex-row overflow-hidden ${
                   tab === 'doc' ? 'z-10' : 'invisible pointer-events-none z-0'
                 }`}
-                style={
-                  isMobile
-                    ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
-                    : undefined
-                }
                 aria-hidden={tab !== 'doc'}
               >
-                <motion.div
-                  key={activeId}
-                  className="min-w-0 w-full"
-                  initial={
-                    prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
+                <div
+                  ref={docScrollRef}
+                  className={`min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
+                    isMobile ? 'touch-pan-y' : ''
+                  }`}
+                  style={
+                    isMobile
+                      ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
+                      : undefined
                   }
-                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                  transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
                 >
-                  <DocViewer content={feature.doc} />
-                </motion.div>
+                  <motion.div
+                    key={activeId}
+                    className="min-w-0 w-full"
+                    initial={
+                      prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
+                    }
+                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                    transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
+                  >
+                    <DocViewer ref={docMarkdownRootRef} content={feature.doc} />
+                  </motion.div>
+                </div>
+                <DocOutline
+                  scrollContainerRef={docScrollRef}
+                  markdownRootRef={docMarkdownRootRef}
+                  scanKey={`${activeId}-${feature.doc?.length ?? 0}`}
+                  prefersReducedMotion={!!prefersReducedMotion}
+                />
               </div>
               <div
-                ref={metaScrollRef}
-                className={`absolute inset-0 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
+                className={`absolute inset-0 flex min-h-0 flex-row overflow-hidden ${
                   tab === 'meta' ? 'z-10' : 'invisible pointer-events-none z-0'
                 }`}
-                style={
-                  isMobile
-                    ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
-                    : undefined
-                }
                 aria-hidden={tab !== 'meta'}
               >
-                <motion.div
-                  key={activeId}
-                  className="min-w-0 w-full"
-                  initial={
-                    prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
+                <div
+                  ref={metaScrollRef}
+                  className={`min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth ${
+                    isMobile ? 'touch-pan-y' : ''
+                  }`}
+                  style={
+                    isMobile
+                      ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
+                      : undefined
                   }
-                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                  transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
                 >
-                  <MetaViewer meta={feature.meta} />
-                </motion.div>
+                  <motion.div
+                    key={activeId}
+                    className="min-w-0 w-full"
+                    initial={
+                      prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
+                    }
+                    animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                    transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
+                  >
+                    <MetaViewer ref={metaRootRef} meta={feature.meta} />
+                  </motion.div>
+                </div>
+                <MetaOutline
+                  scrollContainerRef={metaScrollRef}
+                  metaRootRef={metaRootRef}
+                  scanKey={`${activeId}-meta`}
+                  prefersReducedMotion={!!prefersReducedMotion}
+                />
               </div>
             </div>
 
@@ -480,9 +510,10 @@ export default function App() {
               <motion.button
                 key="feature-drawer-scrim"
                 type="button"
-                className={`fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm ${focusRingOnScrim}`}
+                className={`fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm touch-manipulation touch-pan-y ${focusRingOnScrim}`}
                 aria-label="Close feature list"
                 onClick={() => setDrawerOpen(false)}
+                {...scrimSwipeHandlers}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -492,7 +523,7 @@ export default function App() {
                 key="feature-drawer"
                 id="feature-drawer"
                 {...drawerSwipeHandlers}
-                className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
+                className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 touch-manipulation touch-pan-y flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="drawer-title"
