@@ -2,12 +2,14 @@
  * Unified feature navigation for desktop rail and mobile drawer.
  * Uses surface tokens only (no sidebar-* palette). Theme toggle is only here (rail + drawer), not in the main app bar.
  */
+import { motion, useReducedMotion } from 'motion/react'
 import ThemeToggle from '../theme/ThemeToggle'
 import {
   chromeCountBadge,
   chromeCountBadgeRailActive,
   chromeCountBadgeRailMuted,
 } from '../theme/chromeStyles'
+import { tapScale } from '../theme/motionTokens'
 import { focusRingButton, focusRingInput } from '../theme/focusStyles'
 import { formatFeatureName } from '../featureUtils'
 
@@ -40,6 +42,7 @@ export default function FeatureNavShell({
 }) {
   const isDrawer = variant === 'drawer'
   const showClear = query.length > 0
+  const prefersReducedMotion = useReducedMotion()
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-container">
@@ -48,21 +51,22 @@ export default function FeatureNavShell({
           <span id="drawer-title" className="text-base font-semibold text-on-surface">
             Features
           </span>
-          <button
+          <motion.button
             type="button"
             className={`flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full border border-outline bg-surface-container text-on-surface hover:bg-surface-container-high ${focusRingButton}`}
             onClick={onClose}
             aria-label="Close feature list"
+            whileTap={tapScale(!!prefersReducedMotion)}
           >
             <span className="text-2xl leading-none" aria-hidden>
               ×
             </span>
-          </button>
+          </motion.button>
         </div>
       )}
 
       {!isDrawer && (
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-outline px-4">
+        <div className="flex h-16 shrink-0 items-center gap-2 border-b border-outline px-3 sm:gap-3 sm:px-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-container text-primary shadow-sm">
             <svg
               width="18"
@@ -87,6 +91,18 @@ export default function FeatureNavShell({
               {totalCount} feature{totalCount !== 1 ? 's' : ''}
             </div>
           </div>
+          {onRailCollapse && (
+            <motion.button
+              type="button"
+              className={`flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-lg border border-outline bg-surface-container-high text-on-surface hover:bg-surface-container ${focusRingButton}`}
+              onClick={onRailCollapse}
+              aria-label="Hide feature list"
+              title="Hide feature list"
+              whileTap={tapScale(!!prefersReducedMotion)}
+            >
+              <RailCollapseIcon />
+            </motion.button>
+          )}
         </div>
       )}
 
@@ -126,16 +142,17 @@ export default function FeatureNavShell({
             enterKeyHint="search"
           />
           {showClear && (
-            <button
+            <motion.button
               type="button"
               className={`absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 touch-manipulation items-center justify-center rounded-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface sm:h-9 sm:w-9 ${focusRingButton}`}
               onClick={() => onQueryChange('')}
               aria-label="Clear search"
+              whileTap={tapScale(!!prefersReducedMotion)}
             >
               <span className="text-xl leading-none sm:text-lg" aria-hidden>
                 ×
               </span>
-            </button>
+            </motion.button>
           )}
         </div>
 
@@ -150,14 +167,28 @@ export default function FeatureNavShell({
                 No features match your filter
               </div>
             ) : (
-              features.map((f) => {
+              features.map((f, index) => {
                 const active = f.id === activeId
+                const staggerDelay = prefersReducedMotion ? 0 : Math.min(index * 0.07, 0.55)
                 return (
-                  <button
+                  <motion.button
                     key={f.id}
                     type="button"
                     onClick={() => onSelect(f.id)}
                     aria-current={active ? 'page' : undefined}
+                    initial={prefersReducedMotion ? false : { opacity: 0, x: -28 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={
+                      prefersReducedMotion
+                        ? undefined
+                        : {
+                            type: 'tween',
+                            duration: 0.4,
+                            ease: [0.22, 1, 0.36, 1],
+                            delay: staggerDelay,
+                          }
+                    }
+                    whileTap={tapScale(!!prefersReducedMotion)}
                     className={`flex min-h-11 w-full touch-manipulation items-center gap-2 rounded-lg border border-transparent px-2.5 py-2 text-left text-sm font-medium motion-safe:transition-colors ${focusRingButton} ${
                       active
                         ? 'border-l-[3px] border-l-primary bg-primary/10 pl-[7px] text-on-surface'
@@ -178,7 +209,7 @@ export default function FeatureNavShell({
                         {(f.meta.files_involved?.length ?? 0)}f
                       </span>
                     )}
-                  </button>
+                  </motion.button>
                 )
               })
             )}

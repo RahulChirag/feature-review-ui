@@ -1,8 +1,11 @@
+import { motion, useReducedMotion } from 'motion/react'
 import { useTheme } from './ThemeProvider'
+import { hoverThemeSegment, tapScaleStrong } from './motionTokens'
 import { focusRingButton, focusRingButtonSidebar, focusRingButtonSurface } from './focusStyles'
 
 export default function ThemeToggle({ variant = 'default', className = '' }) {
   const { preference, setPreference } = useTheme()
+  const prefersReducedMotion = useReducedMotion()
 
   if (variant === 'compact') {
     return (
@@ -16,6 +19,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           pressed={preference === 'light'}
           onClick={() => setPreference('light')}
           r={focusRingButton}
+          prefersReducedMotion={!!prefersReducedMotion}
         >
           <SunIcon />
         </CompactThemeBtn>
@@ -24,6 +28,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           pressed={preference === 'dark'}
           onClick={() => setPreference('dark')}
           r={focusRingButton}
+          prefersReducedMotion={!!prefersReducedMotion}
         >
           <MoonIcon />
         </CompactThemeBtn>
@@ -32,6 +37,7 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
           pressed={preference === 'system'}
           onClick={() => setPreference('system')}
           r={focusRingButton}
+          prefersReducedMotion={!!prefersReducedMotion}
         >
           <MonitorIcon />
         </CompactThemeBtn>
@@ -81,13 +87,15 @@ export default function ThemeToggle({ variant = 'default', className = '' }) {
   )
 }
 
-function CompactThemeBtn({ label, pressed, onClick, children, r }) {
+function CompactThemeBtn({ label, pressed, onClick, children, r, prefersReducedMotion }) {
   return (
-    <button
+    <motion.button
       type="button"
       aria-pressed={pressed}
       aria-label={label}
       onClick={onClick}
+      whileHover={!prefersReducedMotion ? hoverThemeSegment : undefined}
+      whileTap={tapScaleStrong(!!prefersReducedMotion)}
       className={`flex min-h-9 min-w-0 touch-manipulation items-center justify-center rounded-md py-1.5 ${r} motion-safe:transition-colors ${
         pressed
           ? 'bg-primary-container text-on-primary-container shadow-sm'
@@ -97,7 +105,7 @@ function CompactThemeBtn({ label, pressed, onClick, children, r }) {
       <span className="flex h-[18px] w-[18px] items-center justify-center [&_svg]:h-[18px] [&_svg]:w-[18px]">
         {children}
       </span>
-    </button>
+    </motion.button>
   )
 }
 

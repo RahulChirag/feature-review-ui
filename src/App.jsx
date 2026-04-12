@@ -3,6 +3,7 @@
  * Docs/Meta: two stacked scroll panels (absolute inset-0) so each tab keeps its own scrollTop.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import Sidebar from './components/Sidebar'
 import DocViewer from './components/DocViewer'
 import MetaViewer from './components/MetaViewer'
@@ -24,6 +25,28 @@ import {
   chromeMutedHint,
 } from './theme/chromeStyles'
 import { useMobileDrawerSwipe } from './hooks/useMobileDrawerSwipe'
+import {
+  hoverChrome,
+  tapScale,
+  transitionContentEnter,
+  transitionReducedOpacity,
+  transitionDrawerSlide,
+  transitionScrimFade,
+  transitionTitleEnter,
+} from './theme/motionTokens'
+
+const DESKTOP_SIDEBAR_STORAGE_KEY = 'feature-review-ui.desktopSidebarOpen'
+
+function readStoredDesktopSidebarOpen() {
+  if (typeof window === 'undefined') return true
+  try {
+    const v = window.localStorage.getItem(DESKTOP_SIDEBAR_STORAGE_KEY)
+    if (v === null) return true
+    return v === 'true'
+  } catch {
+    return true
+  }
+}
 import { focusRingButton, focusRingOnScrim } from './theme/focusStyles'
 
 /** Bottom tab bar height (56dp / Material touch target band) */
@@ -91,11 +114,13 @@ export default function App() {
   const [tab, setTab] = useState('doc')
   const [featureQuery, setFeatureQuery] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(readStoredDesktopSidebarOpen)
 
   const docScrollRef = useRef(null)
   const metaScrollRef = useRef(null)
 
   const isMobile = useMediaQuery('(max-width: 768px)')
+  const prefersReducedMotion = useReducedMotion()
 
   const { mainSwipeHandlers, drawerSwipeHandlers } = useMobileDrawerSwipe({
     isMobile,
@@ -106,6 +131,14 @@ export default function App() {
   useEffect(() => {
     if (!isMobile) setDrawerOpen(false)
   }, [isMobile])
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(DESKTOP_SIDEBAR_STORAGE_KEY, String(desktopSidebarOpen))
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }, [desktopSidebarOpen])
 
   useEffect(() => {
     if (!drawerOpen || !isMobile) return
@@ -168,8 +201,10 @@ export default function App() {
     }`
 
   return (
-    <div className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
+    <div className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[auto_minmax(0,1fr)]">
       <Sidebar
+        open={desktopSidebarOpen}
+        onRailCollapse={() => setDesktopSidebarOpen(false)}
         features={filteredFeatures}
         totalCount={features.length}
         activeId={activeId}
@@ -186,11 +221,32 @@ export default function App() {
           <>
             {/* Desktop: title row + tab strip (z-10 sticky header region) */}
             <div className="z-10 hidden shrink-0 flex-col border-b border-outline bg-surface-container md:flex">
-              <div className="flex min-h-16 flex-wrap items-start gap-4 px-6 py-4 lg:px-8">
+              <div className="flex min-h-16 flex-wrap items-start gap-3 px-6 py-4 lg:gap-4 lg:px-8">
+                <motion.button
+                  type="button"
+                  className={`inline-flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center rounded-lg border border-outline bg-surface-container-high text-on-surface hover:bg-surface-container ${focusRingButton}`}
+                  onClick={() => setDesktopSidebarOpen((v) => !v)}
+                  aria-controls="feature-sidebar"
+                  aria-expanded={desktopSidebarOpen}
+                  title={desktopSidebarOpen ? 'Hide feature list' : 'Show feature list'}
+                  whileHover={!prefersReducedMotion ? hoverChrome : undefined}
+                  whileTap={tapScale(!!prefersReducedMotion)}
+                >
+                  <span className="sr-only">
+                    {desktopSidebarOpen ? 'Hide feature list' : 'Show feature list'}
+                  </span>
+                  {desktopSidebarOpen ? <DesktopSidebarHideIcon /> : <DesktopSidebarShowIcon />}
+                </motion.button>
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-balance text-2xl font-bold tracking-tight text-on-surface lg:text-[1.75rem]">
+                  <motion.h1
+                    key={activeId}
+                    className="text-balance text-2xl font-bold tracking-tight text-on-surface lg:text-[1.75rem]"
+                    initial={prefersReducedMotion ? false : { opacity: 0, x: -16, filter: 'blur(6px)' }}
+                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                    transition={prefersReducedMotion ? { duration: 0 } : transitionTitleEnter}
+                  >
                     {formatFeatureName(feature.meta?.feature ?? feature.id)}
-                  </h1>
+                  </motion.h1>
                   {feature.meta?.generated_date && generatedDisplay.label && (
                     <p className={chromeMetadata}>
                       Generated{' '}
@@ -203,13 +259,26 @@ export default function App() {
                   )}
                 </div>
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                  <button type="button" className={chromeDownloadPill} onClick={handleDownloadMd} disabled={!feature.doc}>
+                  <motion.button
+                    type="button"
+                    className={chromeDownloadPill}
+                    onClick={handleDownloadMd}
+                    disabled={!feature.doc}
+                    whileHover={!prefersReducedMotion ? hoverChrome : undefined}
+                    whileTap={tapScale(!!prefersReducedMotion)}
+                  >
                     Download .md
-                  </button>
+                  </motion.button>
                   {feature.meta ? (
-                    <button type="button" className={chromeDownloadPill} onClick={handleDownloadMeta}>
+                    <motion.button
+                      type="button"
+                      className={chromeDownloadPill}
+                      onClick={handleDownloadMeta}
+                      whileHover={!prefersReducedMotion ? hoverChrome : undefined}
+                      whileTap={tapScale(!!prefersReducedMotion)}
+                    >
                       Download meta.json
-                    </button>
+                    </motion.button>
                   ) : (
                     <span className={chromeMutedHint}>No meta.json</span>
                   )}
@@ -219,67 +288,80 @@ export default function App() {
                 className="flex gap-1 border-t border-outline/70 px-4 lg:px-6"
                 aria-label="Documentation and metadata"
               >
-                <button
+                <motion.button
                   type="button"
                   className={tabDesktop(tab === 'doc')}
                   onClick={() => setTab('doc')}
                   aria-current={tab === 'doc' ? 'page' : undefined}
+                  whileHover={!prefersReducedMotion ? hoverChrome : undefined}
+                  whileTap={tapScale(!!prefersReducedMotion)}
                 >
                   <DocIcon />
                   Documentation
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
                   className={tabDesktop(tab === 'meta')}
                   onClick={() => setTab('meta')}
                   aria-current={tab === 'meta' ? 'page' : undefined}
+                  whileHover={!prefersReducedMotion ? hoverChrome : undefined}
+                  whileTap={tapScale(!!prefersReducedMotion)}
                 >
                   <MetaIcon />
                   Metadata
                   {feature.meta && (
                     <span className={chromeCountBadge}>{countMetaItems(feature.meta)}</span>
                   )}
-                </button>
+                </motion.button>
               </nav>
             </div>
 
             {/* Mobile: header row + optional generated strip (Option B) */}
             <div className="z-10 shrink-0 md:hidden">
               <div className="flex h-14 min-h-[56px] items-center gap-2 border-b border-outline bg-surface-container px-3">
-                <button
+                <motion.button
                   type="button"
                   className={`${chromeIconActionMd} shrink-0`}
                   onClick={() => setDrawerOpen(true)}
                   aria-expanded={drawerOpen}
                   aria-controls="feature-drawer"
                   aria-label="Open feature list"
+                  whileTap={tapScale(!!prefersReducedMotion)}
                 >
                   <MenuIcon />
-                </button>
-                <h1 className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface">
+                </motion.button>
+                <motion.h1
+                  key={activeId}
+                  className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface"
+                  initial={prefersReducedMotion ? false : { opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : transitionTitleEnter}
+                >
                   {formatFeatureName(feature.meta?.feature ?? feature.id)}
-                </h1>
+                </motion.h1>
                 <div className="flex shrink-0 items-center gap-1" aria-label="Downloads">
-                  <button
+                  <motion.button
                     type="button"
                     className={`${chromeIconActionSm} shrink-0`}
                     onClick={handleDownloadMd}
                     disabled={!feature.doc}
                     title="Download Markdown"
+                    whileTap={tapScale(!!prefersReducedMotion)}
                   >
                     <span className="sr-only">Download Markdown</span>
                     <DocIcon />
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     className={`${chromeIconActionSm} shrink-0`}
                     onClick={handleDownloadMeta}
                     disabled={!feature.meta}
                     title={feature.meta ? 'Download meta.json' : 'No meta.json'}
+                    whileTap={tapScale(!!prefersReducedMotion)}
                   >
                     <span className="sr-only">Download meta.json</span>
                     <JsonDownloadIcon />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
               {feature.meta?.generated_date && generatedDisplay.label && (
@@ -296,7 +378,7 @@ export default function App() {
               )}
             </div>
 
-            {/* Stacked scroll panels — each tab keeps its own scroll position */}
+            {/* Stacked scroll panels — instant visibility swap (opacity animation caused overlap/flicker) */}
             <div className="relative min-h-0 flex-1 overflow-hidden">
               <div
                 ref={docScrollRef}
@@ -310,9 +392,17 @@ export default function App() {
                 }
                 aria-hidden={tab !== 'doc'}
               >
-                <div className="min-w-0 w-full">
+                <motion.div
+                  key={activeId}
+                  className="min-w-0 w-full"
+                  initial={
+                    prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
+                  }
+                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                  transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
+                >
                   <DocViewer content={feature.doc} />
-                </div>
+                </motion.div>
               </div>
               <div
                 ref={metaScrollRef}
@@ -326,9 +416,17 @@ export default function App() {
                 }
                 aria-hidden={tab !== 'meta'}
               >
-                <div className="min-w-0 w-full">
+                <motion.div
+                  key={activeId}
+                  className="min-w-0 w-full"
+                  initial={
+                    prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.97, filter: 'blur(8px)' }
+                  }
+                  animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                  transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
+                >
                   <MetaViewer meta={feature.meta} />
-                </div>
+                </motion.div>
               </div>
             </div>
 
@@ -339,27 +437,29 @@ export default function App() {
                 style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
                 aria-label="Documentation and metadata"
               >
-                <button
+                <motion.button
                   type="button"
                   className={tabMobile(tab === 'doc')}
                   onClick={() => setTab('doc')}
                   aria-current={tab === 'doc' ? 'page' : undefined}
+                  whileTap={tapScale(!!prefersReducedMotion)}
                 >
                   <DocIcon />
                   <span>Docs</span>
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
                   className={tabMobile(tab === 'meta')}
                   onClick={() => setTab('meta')}
                   aria-current={tab === 'meta' ? 'page' : undefined}
+                  whileTap={tapScale(!!prefersReducedMotion)}
                 >
                   <MetaIcon />
                   <span>Meta</span>
                   {feature.meta && (
                     <span className={chromeCountBadge}>{countMetaItems(feature.meta)}</span>
                   )}
-                </button>
+                </motion.button>
               </nav>
             )}
           </>
@@ -374,34 +474,48 @@ export default function App() {
         )}
       </main>
 
-      {isMobile && drawerOpen && (
-        <>
-          <button
-            type="button"
-            className={`fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm motion-safe:transition-opacity ${focusRingOnScrim}`}
-            aria-label="Close feature list"
-            onClick={() => setDrawerOpen(false)}
-          />
-          <div
-            id="feature-drawer"
-            {...drawerSwipeHandlers}
-            className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="drawer-title"
-          >
-            <FeatureNavShell
-              variant="drawer"
-              onClose={() => setDrawerOpen(false)}
-              features={filteredFeatures}
-              totalCount={features.length}
-              activeId={activeId}
-              onSelect={selectFeature}
-              query={featureQuery}
-              onQueryChange={setFeatureQuery}
-            />
-          </div>
-        </>
+      {isMobile && (
+        <AnimatePresence>
+          {drawerOpen && (
+            <>
+              <motion.button
+                key="feature-drawer-scrim"
+                type="button"
+                className={`fixed inset-0 z-[100] border-0 bg-scrim backdrop-blur-sm ${focusRingOnScrim}`}
+                aria-label="Close feature list"
+                onClick={() => setDrawerOpen(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={prefersReducedMotion ? transitionReducedOpacity : transitionScrimFade}
+              />
+              <motion.div
+                key="feature-drawer"
+                id="feature-drawer"
+                {...drawerSwipeHandlers}
+                className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="drawer-title"
+                initial={prefersReducedMotion ? { opacity: 0 } : { x: '-100%' }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { x: 0 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { x: '-100%' }}
+                transition={prefersReducedMotion ? transitionReducedOpacity : transitionDrawerSlide}
+              >
+                <FeatureNavShell
+                  variant="drawer"
+                  onClose={() => setDrawerOpen(false)}
+                  features={filteredFeatures}
+                  totalCount={features.length}
+                  activeId={activeId}
+                  onSelect={selectFeature}
+                  query={featureQuery}
+                  onQueryChange={setFeatureQuery}
+                />
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       )}
     </div>
   )
@@ -414,6 +528,30 @@ function countMetaItems(meta) {
     (meta.apis_used?.length ?? 0) +
     (meta.db_operations?.length ?? 0) +
     (meta.functions_traced?.length ?? 0)
+  )
+}
+
+function DesktopSidebarHideIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3" y="3" width="7" height="18" rx="1" />
+      <path d="M14 9l4 3-4 3" />
+      <line x1="14" y1="6" x2="21" y2="6" />
+      <line x1="14" y1="12" x2="21" y2="12" />
+      <line x1="14" y1="18" x2="21" y2="18" />
+    </svg>
+  )
+}
+
+function DesktopSidebarShowIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="14" y="3" width="7" height="18" rx="1" />
+      <path d="M10 9L6 12l4 3" />
+      <line x1="10" y1="6" x2="3" y2="6" />
+      <line x1="10" y1="12" x2="3" y2="12" />
+      <line x1="10" y1="18" x2="3" y2="18" />
+    </svg>
   )
 }
 
