@@ -17,6 +17,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # upload-pages-artifact@v4 still bundles upload-artifact built for Node 20; this opts nested JS actions to Node 24.
+    # Remove when actions/upload-pages-artifact ships a release that pins Node 24–native upload-artifact.
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v6
