@@ -1,0 +1,27 @@
+{
+  "feature": "sharepoint-site-discovery",
+  "reviewer": "codebase-doc-analyzer",
+  "date": "2026-04-13",
+  "branch": "feature/sharepoint-classic-subsite-autodetect",
+  "head_commit_reviewed": "f203380",
+  "reviewed_files": [
+    {
+      "path": "backend/app/services/edms_document_service.py",
+      "functions": [
+        "_get_sharepoint_access_token (line 50)",
+        "get_sharepoint_sites_by_domain (line 260)",
+        "_get_all_subsites (line 518)",
+        "_get_sharepoint_token_for_rest (line 598)",
+        "_get_all_subsites_rest (line 640)"
+      ]
+    },
+    {
+      "path": "backend/app/routes/edms_sites.py",
+      "functions": [
+        "get_sharepoint_sites_by_domain (line 416)",
+        "discovery endpoint caller (line 986)"
+      ]
+    }
+  ],
+  "description": "Review of SharePoint site discovery flow: Graph tenant listing, Graph subsite recursion, SharePoint REST /_api/web/webs Classic fallback, and Classic/Modern topology auto-detection added in commit f203380."
+}
