@@ -7,7 +7,11 @@ const ThemeContext = createContext(null)
 export function ThemeProvider({ children }) {
   const [preference, setPreferenceState] = useState(() => {
     if (typeof window === 'undefined') return 'system'
-    return localStorage.getItem(THEME_STORAGE_KEY) || 'system'
+    try {
+      return window.localStorage.getItem(THEME_STORAGE_KEY) || 'system'
+    } catch {
+      return 'system'
+    }
   })
 
   const [systemDark, setSystemDark] = useState(() =>
@@ -34,7 +38,7 @@ export function ThemeProvider({ children }) {
   const setPreference = (p) => {
     setPreferenceState(p)
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, p)
+      window.localStorage.setItem(THEME_STORAGE_KEY, p)
     } catch {
       /* ignore */
     }

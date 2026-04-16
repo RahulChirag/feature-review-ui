@@ -1,16 +1,14 @@
-import { forwardRef } from 'react'
+import { forwardRef, lazy, Suspense } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSlug from 'rehype-slug'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { useTheme } from '../theme/ThemeProvider'
 import { focusRingLink } from '../theme/focusStyles'
 
 function mergeClass(base, extra) {
   return [base, extra].filter(Boolean).join(' ')
 }
+
+const CodeBlockHighlighter = lazy(() => import('./CodeBlockHighlighter'))
 
 /* Full-width column; sits flush on main surface (no nested card). `id` comes from rehype-slug via ...props */
 const mdComponents = {
@@ -105,9 +103,6 @@ const mdComponents = {
 }
 
 const DocViewer = forwardRef(function DocViewer({ content }, ref) {
-  const { resolvedTheme } = useTheme()
-  const codeStyle = resolvedTheme === 'dark' ? vscDarkPlus : oneLight
-
   if (!content) {
     return (
       <div className="px-6 py-8 text-sm text-on-surface-muted">
@@ -115,8 +110,6 @@ const DocViewer = forwardRef(function DocViewer({ content }, ref) {
       </div>
     )
   }
-
-  const codeFontSize = '15px'
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-x-hidden break-words px-4 py-6 text-on-surface md:px-8 md:py-8 lg:px-10">
@@ -130,24 +123,17 @@ const DocViewer = forwardRef(function DocViewer({ content }, ref) {
               const match = /language-(\w+)/.exec(className || '')
               if (match) {
                 return (
-                  <div className="my-4 w-full max-w-none overflow-x-auto border border-code-border bg-code-bg [-webkit-overflow-scrolling:touch] md:overflow-hidden">
-                    <SyntaxHighlighter
-                      style={codeStyle}
-                      language={match[1]}
-                      PreTag="pre"
-                      customStyle={{
-                        margin: 0,
-                        borderRadius: '0px',
-                        fontSize: codeFontSize,
-                        maxWidth: '100%',
-                        padding: '1rem 1rem',
-                        backgroundColor: 'var(--app-code-bg)',
-                        color: 'var(--app-code-text)',
-                      }}
-                    >
+                  <Suspense
+                    fallback={
+                      <pre className="my-4 w-full max-w-none overflow-x-auto border border-code-border bg-code-bg p-4 font-mono text-[13px] text-code-text [-webkit-overflow-scrolling:touch]">
+                        <code>{String(children).replace(/\n$/, '')}</code>
+                      </pre>
+                    }
+                  >
+                    <CodeBlockHighlighter language={match[1]}>
                       {String(children).replace(/\n$/, '')}
-                    </SyntaxHighlighter>
-                  </div>
+                    </CodeBlockHighlighter>
+                  </Suspense>
                 )
               }
               return (

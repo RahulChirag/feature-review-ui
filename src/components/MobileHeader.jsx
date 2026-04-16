@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import { chromeIconActionMd, chromeIconActionSm, chromeMetadataStrip } from '../theme/chromeStyles'
 import { tapScale, transitionTitleEnter } from '../theme/motionTokens'
-import { formatFeatureName } from '../utils/featureUtils'
+import { formatFeatureName } from '../features/feature-reviews/lib/featureFormatters'
 import { DocIcon, JsonDownloadIcon, MenuIcon } from './icons'
 
 export default function MobileHeader({

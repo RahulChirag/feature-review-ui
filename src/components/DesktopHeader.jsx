@@ -2,18 +2,9 @@ import { motion } from 'motion/react'
 import { chromeCountBadge, chromeDownloadPill, chromeMutedHint, chromeMetadata } from '../theme/chromeStyles'
 import { focusRingButton } from '../theme/focusStyles'
 import { hoverChrome, tapScale, transitionTitleEnter } from '../theme/motionTokens'
-import { formatFeatureName } from '../utils/featureUtils'
+import { countMetaItems } from '../features/feature-reviews/lib/metaUtils'
+import { formatFeatureName } from '../features/feature-reviews/lib/featureFormatters'
 import { ChevronLeftIcon, ChevronRightIcon, DocIcon, MetaIcon } from './icons'
-
-function countMetaItems(meta) {
-  return (
-    (meta.files_involved?.length ?? 0) +
-    (meta.entry_points?.length ?? 0) +
-    (meta.apis_used?.length ?? 0) +
-    (meta.db_operations?.length ?? 0) +
-    (meta.functions_traced?.length ?? 0)
-  )
-}
 
 const tabClass = (active) =>
   `relative z-10 flex min-h-12 touch-manipulation items-center gap-2 rounded-t-lg px-5 text-sm font-semibold ${focusRingButton} ${

@@ -11,8 +11,8 @@ import {
 } from '../theme/chromeStyles'
 import { tapScale } from '../theme/motionTokens'
 import { focusRingButton, focusRingInput } from '../theme/focusStyles'
-import { formatFeatureName } from '../utils/featureUtils'
 import { APP_DISPLAY_VERSION } from '../utils/appVersion'
+import { formatFeatureName } from '../features/feature-reviews/lib/featureFormatters'
 
 const FOOTER_HINT = 'Drop folders into feature-reviews/ to add more'
 
