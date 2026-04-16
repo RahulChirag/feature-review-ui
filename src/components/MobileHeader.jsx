@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { chromeIconActionMd, chromeIconActionSm, chromeMetadataStrip } from '../theme/chromeStyles'
+import { chromeIconActionSm, chromeMetadataStrip } from '../theme/chromeStyles'
 import { tapScale, transitionTitleEnter } from '../theme/motionTokens'
 import { formatFeatureName } from '../features/feature-reviews/lib/featureFormatters'
 import { DocIcon, JsonDownloadIcon, MenuIcon } from './icons'
@@ -18,10 +18,10 @@ export default function MobileHeader({
 }) {
   return (
     <div className="z-10 shrink-0 md:hidden">
-      <div className="flex h-14 min-h-[56px] items-center gap-2 border-b border-outline bg-surface-container px-3">
+      <div className="flex h-12 min-h-[48px] items-center gap-2 border-b border-outline bg-surface-container px-3">
         <motion.button
           type="button"
-          className={`${chromeIconActionMd} shrink-0`}
+          className={`${chromeIconActionSm} shrink-0`}
           onClick={() => setDrawerOpen(true)}
           aria-expanded={drawerOpen}
           aria-controls="feature-drawer"
@@ -32,7 +32,7 @@ export default function MobileHeader({
         </motion.button>
         <motion.h1
           key={activeId}
-          className="min-w-0 flex-1 truncate text-base font-bold leading-tight text-on-surface"
+          className="min-w-0 flex-1 truncate text-[15px] font-bold leading-snug text-on-surface"
           initial={prefersReducedMotion ? false : { opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={prefersReducedMotion ? { duration: 0 } : transitionTitleEnter}
@@ -65,7 +65,7 @@ export default function MobileHeader({
         </div>
       </div>
       {feature.meta?.generated_date && generatedDisplay.label && (
-        <div className="border-b border-outline bg-surface-container px-3 py-1.5">
+        <div className="border-b border-outline bg-surface-container px-3 py-1">
           <p className={chromeMetadataStrip}>
             Generated{' '}
             {generatedDisplay.iso ? (

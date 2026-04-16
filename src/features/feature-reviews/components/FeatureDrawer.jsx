@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import FeatureNavShell from '../../../components/FeatureNavShell'
 import { focusRingOnScrim } from '../../../theme/focusStyles'
+import { FEATURE_RAIL_WIDTH_PX } from '../../../theme/layoutTokens'
 import {
   transitionDrawerSlide,
   transitionReducedOpacity,
@@ -40,7 +41,8 @@ export default function FeatureDrawer({
           <motion.div
             key="feature-drawer"
             id="feature-drawer"
-            className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full max-w-[20rem] min-h-0 touch-manipulation flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
+            className="fixed inset-y-0 left-0 z-[110] flex h-[100dvh] w-full min-h-0 touch-manipulation flex-col overflow-hidden border-r border-outline bg-surface-container pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-elevation-2)]"
+            style={{ maxWidth: FEATURE_RAIL_WIDTH_PX }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="drawer-title"
@@ -50,7 +52,6 @@ export default function FeatureDrawer({
             transition={prefersReducedMotion ? transitionReducedOpacity : transitionDrawerSlide}
           >
             <FeatureNavShell
-              variant="drawer"
               onClose={onClose}
               features={features}
               totalCount={totalFeatures}

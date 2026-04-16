@@ -3,12 +3,21 @@
  * Docs/Meta: two stacked scroll panels (absolute inset-0) so each tab keeps its own scrollTop.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useReducedMotion } from 'motion/react'
-import DesktopHeader from '../../components/DesktopHeader'
+import { motion, useReducedMotion } from 'motion/react'
+import {
+  DesktopHeaderTabNav,
+  DesktopHeaderTitleRow,
+} from '../../components/DesktopHeader'
 import MobileHeader from '../../components/MobileHeader'
-import Sidebar from '../../components/Sidebar'
+import {
+  FeatureNavRailBody,
+  FeatureRailBrandRow,
+  FeatureRailThemeRow,
+} from '../../components/FeatureNavShell'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { useMobileDrawerSwipe } from '../../hooks/useMobileDrawerSwipe'
+import { FEATURE_RAIL_WIDTH_PX } from '../../theme/layoutTokens'
+import { transitionDesktopSidebar, transitionReducedOpacity } from '../../theme/motionTokens'
 import { downloadTextFile } from '../../utils/downloadUtils'
 import { useFeatureDocument } from './hooks/useFeatureDocument'
 import { useFeatureSelection } from './hooks/useFeatureSelection'
@@ -99,69 +108,137 @@ export default function FeatureReviewsPage() {
     )
   }
 
+  const railShellProps = {
+    features: filteredFeatures,
+    totalCount: totalFeatures,
+    activeId,
+    onSelect: handleSelectFeature,
+    query: featureQuery,
+    onQueryChange: setFeatureQuery,
+  }
+
+  const railInactive = desktopSidebarOpen ? '' : 'pointer-events-none'
+
+  const desktopGridTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : transitionDesktopSidebar
+
   return (
-    <div className="grid h-[100dvh] min-h-0 w-full grid-cols-1 overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] md:grid-cols-[auto_minmax(0,1fr)]">
-      <Sidebar
-        open={desktopSidebarOpen}
-        features={filteredFeatures}
-        totalCount={totalFeatures}
-        activeId={activeId}
-        onSelect={handleSelectFeature}
-        query={featureQuery}
-        onQueryChange={setFeatureQuery}
-      />
+    <div className="flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-surface pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+      {isMobile ? (
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          {feature ? (
+            <>
+              <MobileHeader
+                activeId={activeId}
+                feature={feature}
+                generatedDisplay={generatedDisplay}
+                drawerOpen={drawerOpen}
+                setDrawerOpen={setDrawerOpen}
+                canDownloadDoc={canDownloadDoc}
+                handleDownloadDoc={handleDownloadDoc}
+                docDownloadTitle={docType === 'pdf' ? 'Download PDF' : 'Download Markdown'}
+                handleDownloadMeta={handleDownloadMeta}
+                prefersReducedMotion={!!prefersReducedMotion}
+              />
 
-      <main className="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface touch-manipulation md:bg-surface">
-        {feature ? (
-          <>
-            <DesktopHeader
-              activeId={activeId}
-              feature={feature}
-              generatedDisplay={generatedDisplay}
-              desktopSidebarOpen={desktopSidebarOpen}
-              setDesktopSidebarOpen={setDesktopSidebarOpen}
-              tab={tab}
-              setTab={setTab}
-              canDownloadDoc={canDownloadDoc}
-              handleDownloadDoc={handleDownloadDoc}
-              docDownloadLabel={docType === 'pdf' ? 'Download .pdf' : 'Download .md'}
-              handleDownloadMeta={handleDownloadMeta}
-              prefersReducedMotion={!!prefersReducedMotion}
+              <FeatureContentTabs
+                activeId={activeId}
+                docContent={docContent}
+                docType={docType}
+                docMarkdownRootRef={docMarkdownRootRef}
+                docScrollRef={docScrollRef}
+                docStatus={docStatus}
+                feature={feature}
+                isMobile={isMobile}
+                metaRootRef={metaRootRef}
+                metaScrollRef={metaScrollRef}
+                prefersReducedMotion={!!prefersReducedMotion}
+                setTab={setTab}
+                tab={tab}
+              />
+            </>
+          ) : (
+            <FeatureEmptyState />
+          )}
+        </div>
+      ) : (
+        <motion.div
+          initial={false}
+          animate={{
+            gridTemplateColumns: desktopSidebarOpen
+              ? `${FEATURE_RAIL_WIDTH_PX}px 1px minmax(0,1fr)`
+              : `0px 0px minmax(0,1fr)`,
+          }}
+          transition={desktopGridTransition}
+          className="grid min-h-0 w-full flex-1 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden"
+        >
+          <div
+            id="feature-sidebar"
+            aria-hidden={!desktopSidebarOpen}
+            className={`col-start-1 row-span-3 grid min-h-0 min-w-0 grid-rows-subgrid overflow-hidden ${railInactive}`}
+          >
+            <FeatureRailBrandRow totalCount={totalFeatures} />
+            <FeatureRailThemeRow />
+            <FeatureNavRailBody
+              {...railShellProps}
+              searchInputId="feature-filter-rail"
+              className="h-full min-h-0 flex-1 overflow-hidden"
             />
+          </div>
 
-            <MobileHeader
-              activeId={activeId}
-              feature={feature}
-              generatedDisplay={generatedDisplay}
-              drawerOpen={drawerOpen}
-              setDrawerOpen={setDrawerOpen}
-              canDownloadDoc={canDownloadDoc}
-              handleDownloadDoc={handleDownloadDoc}
-              docDownloadTitle={docType === 'pdf' ? 'Download PDF' : 'Download Markdown'}
-              handleDownloadMeta={handleDownloadMeta}
-              prefersReducedMotion={!!prefersReducedMotion}
-            />
+          <div
+            aria-hidden
+            className="col-start-2 row-span-3 min-h-0 min-w-0 bg-outline"
+          />
 
-            <FeatureContentTabs
-              activeId={activeId}
-              docContent={docContent}
-              docType={docType}
-              docMarkdownRootRef={docMarkdownRootRef}
-              docScrollRef={docScrollRef}
-              docStatus={docStatus}
-              feature={feature}
-              isMobile={isMobile}
-              metaRootRef={metaRootRef}
-              metaScrollRef={metaScrollRef}
-              prefersReducedMotion={!!prefersReducedMotion}
-              setTab={setTab}
-              tab={tab}
-            />
-          </>
-        ) : (
-          <FeatureEmptyState />
-        )}
-      </main>
+          {feature ? (
+            <>
+              <DesktopHeaderTitleRow
+                className="col-start-3 row-start-1"
+                activeId={activeId}
+                feature={feature}
+                generatedDisplay={generatedDisplay}
+                desktopSidebarOpen={desktopSidebarOpen}
+                setDesktopSidebarOpen={setDesktopSidebarOpen}
+                canDownloadDoc={canDownloadDoc}
+                handleDownloadDoc={handleDownloadDoc}
+                docDownloadLabel={docType === 'pdf' ? 'Download .pdf' : 'Download .md'}
+                handleDownloadMeta={handleDownloadMeta}
+                prefersReducedMotion={!!prefersReducedMotion}
+              />
+              <DesktopHeaderTabNav
+                className="col-start-3 row-start-2"
+                tab={tab}
+                setTab={setTab}
+                feature={feature}
+                prefersReducedMotion={!!prefersReducedMotion}
+              />
+              <div className="relative col-start-3 row-start-3 flex min-h-0 min-w-0 flex-col overflow-hidden bg-surface touch-manipulation">
+                <FeatureContentTabs
+                  activeId={activeId}
+                  docContent={docContent}
+                  docType={docType}
+                  docMarkdownRootRef={docMarkdownRootRef}
+                  docScrollRef={docScrollRef}
+                  docStatus={docStatus}
+                  feature={feature}
+                  isMobile={isMobile}
+                  metaRootRef={metaRootRef}
+                  metaScrollRef={metaScrollRef}
+                  prefersReducedMotion={!!prefersReducedMotion}
+                  setTab={setTab}
+                  tab={tab}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="relative col-span-1 col-start-3 row-span-3 row-start-1 flex min-h-0 flex-col overflow-hidden bg-surface">
+              <FeatureEmptyState />
+            </div>
+          )}
+        </motion.div>
+      )}
 
       <FeatureDrawer
         activeId={activeId}

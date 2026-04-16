@@ -29,12 +29,14 @@ function buildFeatureIndex() {
     const folder = getFeatureFolder(path)
     if (!featureMap[folder]) featureMap[folder] = { id: folder }
     featureMap[folder].hasDoc = true
+    featureMap[folder].hasMarkdown = true
   })
 
   Object.keys(pdfLoaders).forEach((path) => {
     const folder = getFeatureFolder(path)
     if (!featureMap[folder]) featureMap[folder] = { id: folder }
     featureMap[folder].hasDoc = true
+    featureMap[folder].hasPdf = true
   })
 
   Object.entries(metaModules).forEach(([path, module]) => {
@@ -43,7 +45,13 @@ function buildFeatureIndex() {
     featureMap[folder].meta = module.default ?? module
   })
 
-  return Object.values(featureMap).sort(compareFeaturesByGeneratedDate)
+  return Object.values(featureMap)
+    .map((f) => ({
+      ...f,
+      /** Sidebar grouping: markdown wins when both exist (same as getFeatureDocumentById). */
+      docKind: f.hasMarkdown ? 'markdown' : f.hasPdf ? 'pdf' : 'none',
+    }))
+    .sort(compareFeaturesByGeneratedDate)
 }
 
 const featureIndex = buildFeatureIndex()
