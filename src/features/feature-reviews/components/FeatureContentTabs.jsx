@@ -80,6 +80,7 @@ export default function FeatureContentTabs({
                 </motion.div>
               )}
             </Suspense>
+            {isMobile && <div aria-hidden className="h-[calc(56px+env(safe-area-inset-bottom,0px))] shrink-0" />}
           </div>
           <DocOutline
             scrollContainerRef={docScrollRef}
@@ -117,6 +118,7 @@ export default function FeatureContentTabs({
             >
               <MetaViewer ref={metaRootRef} meta={feature.meta} />
             </motion.div>
+            {isMobile && <div aria-hidden className="h-[calc(56px+env(safe-area-inset-bottom,0px))] shrink-0" />}
           </div>
           <MetaOutline
             scrollContainerRef={metaScrollRef}
