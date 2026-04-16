@@ -13,6 +13,7 @@ import { countMetaItems } from '../lib/metaUtils'
 const DocViewer = lazy(() => import('../../../components/DocViewer'))
 
 const MOBILE_NAV_H_PX = 56
+const MOBILE_NAV_CLEARANCE_PX = 72
 
 function mobileTabClass(active) {
   return `relative flex h-14 min-h-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 border-t-2 py-1 text-[11px] font-semibold leading-tight motion-safe:transition-colors ${focusRingButton} ${
@@ -53,7 +54,9 @@ export default function FeatureContentTabs({
             }`}
             style={
               isMobile
-                ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
+                ? {
+                    paddingBottom: `calc(${MOBILE_NAV_CLEARANCE_PX}px + env(safe-area-inset-bottom, 0px))`,
+                  }
                 : undefined
             }
           >
@@ -80,7 +83,6 @@ export default function FeatureContentTabs({
                 </motion.div>
               )}
             </Suspense>
-            {isMobile && <div aria-hidden className="h-[calc(56px+env(safe-area-inset-bottom,0px))] shrink-0" />}
           </div>
           <DocOutline
             scrollContainerRef={docScrollRef}
@@ -101,7 +103,9 @@ export default function FeatureContentTabs({
             className="h-full min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
             style={
               isMobile
-                ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
+                ? {
+                    paddingBottom: `calc(${MOBILE_NAV_CLEARANCE_PX}px + env(safe-area-inset-bottom, 0px))`,
+                  }
                 : undefined
             }
           >
@@ -118,7 +122,6 @@ export default function FeatureContentTabs({
             >
               <MetaViewer ref={metaRootRef} meta={feature.meta} />
             </motion.div>
-            {isMobile && <div aria-hidden className="h-[calc(56px+env(safe-area-inset-bottom,0px))] shrink-0" />}
           </div>
           <MetaOutline
             scrollContainerRef={metaScrollRef}
@@ -131,7 +134,7 @@ export default function FeatureContentTabs({
 
       {isMobile && (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-40 flex h-14 border-t border-outline bg-surface-container/95 shadow-[var(--shadow-nav)] backdrop-blur-md supports-[backdrop-filter]:bg-surface-container/90"
+          className="fixed bottom-0 left-0 right-0 z-40 flex h-[calc(56px+env(safe-area-inset-bottom,0px))] border-t border-outline bg-surface-container/95 shadow-[var(--shadow-nav)] backdrop-blur-md supports-[backdrop-filter]:bg-surface-container/90"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           aria-label="Documentation and metadata"
         >
