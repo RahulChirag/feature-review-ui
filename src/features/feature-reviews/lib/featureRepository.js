@@ -6,6 +6,12 @@ const mdLoaders = import.meta.glob('../../../../feature-reviews/**/*.md', {
   eager: false,
 })
 
+const pdfLoaders = import.meta.glob('../../../../feature-reviews/**/*.pdf', {
+  query: '?url',
+  import: 'default',
+  eager: false,
+})
+
 const metaModules = import.meta.glob('../../../../feature-reviews/**/meta.json', {
   eager: true,
 })
@@ -20,6 +26,12 @@ function buildFeatureIndex() {
   const featureMap = {}
 
   Object.keys(mdLoaders).forEach((path) => {
+    const folder = getFeatureFolder(path)
+    if (!featureMap[folder]) featureMap[folder] = { id: folder }
+    featureMap[folder].hasDoc = true
+  })
+
+  Object.keys(pdfLoaders).forEach((path) => {
     const folder = getFeatureFolder(path)
     if (!featureMap[folder]) featureMap[folder] = { id: folder }
     featureMap[folder].hasDoc = true
@@ -43,10 +55,21 @@ export function getAllFeatures() {
 export async function getFeatureDocumentById(id) {
   if (docCache.has(id)) return docCache.get(id)
 
-  const loaderEntry = Object.entries(mdLoaders).find(([path]) => getFeatureFolder(path) === id)
-  if (!loaderEntry) return ''
+  const markdownLoaderEntry = Object.entries(mdLoaders).find(([path]) => getFeatureFolder(path) === id)
+  if (markdownLoaderEntry) {
+    const content = await markdownLoaderEntry[1]()
+    const doc = { type: 'markdown', content }
+    docCache.set(id, doc)
+    return doc
+  }
 
-  const content = await loaderEntry[1]()
-  docCache.set(id, content)
-  return content
+  const pdfLoaderEntry = Object.entries(pdfLoaders).find(([path]) => getFeatureFolder(path) === id)
+  if (pdfLoaderEntry) {
+    const content = await pdfLoaderEntry[1]()
+    const doc = { type: 'pdf', content }
+    docCache.set(id, doc)
+    return doc
+  }
+
+  return null
 }

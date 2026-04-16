@@ -25,6 +25,7 @@ function mobileTabClass(active) {
 export default function FeatureContentTabs({
   activeId,
   docContent,
+  docType,
   docMarkdownRootRef,
   docScrollRef,
   docStatus,
@@ -47,7 +48,9 @@ export default function FeatureContentTabs({
         >
           <div
             ref={docScrollRef}
-            className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
+            className={`h-full min-h-0 min-w-0 flex-1 overflow-x-hidden scroll-smooth ${
+              docType === 'pdf' ? 'overflow-y-hidden' : 'overflow-y-auto overscroll-y-contain'
+            }`}
             style={
               isMobile
                 ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
@@ -64,7 +67,7 @@ export default function FeatureContentTabs({
               ) : (
                 <motion.div
                   key={activeId}
-                  className="w-full min-w-0"
+                  className="h-full w-full min-w-0"
                   initial={
                     prefersReducedMotion
                       ? false
@@ -73,7 +76,7 @@ export default function FeatureContentTabs({
                   animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
                   transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
                 >
-                  <DocViewer ref={docMarkdownRootRef} content={docContent} />
+                  <DocViewer ref={docMarkdownRootRef} content={docContent} contentType={docType} />
                 </motion.div>
               )}
             </Suspense>
@@ -94,7 +97,7 @@ export default function FeatureContentTabs({
         >
           <div
             ref={metaScrollRef}
-            className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
+            className="h-full min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain scroll-smooth"
             style={
               isMobile
                 ? { paddingBottom: `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))` }
@@ -103,7 +106,7 @@ export default function FeatureContentTabs({
           >
             <motion.div
               key={activeId}
-              className="w-full min-w-0"
+              className="h-full w-full min-w-0"
               initial={
                 prefersReducedMotion
                   ? false

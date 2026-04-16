@@ -31,7 +31,7 @@ export default function FeatureReviewsPage() {
     totalFeatures,
   } = useFeatureSelection()
   const { desktopSidebarOpen, setDesktopSidebarOpen } = useSidebarPreference()
-  const { canDownloadDoc, docContent, docStatus } = useFeatureDocument(activeId)
+  const { canDownloadDoc, docContent, docStatus, docType } = useFeatureDocument(activeId)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const docScrollRef = useRef(null)
@@ -75,8 +75,18 @@ export default function FeatureReviewsPage() {
     setDrawerOpen(false)
   }
 
-  function handleDownloadMd() {
+  function handleDownloadDoc() {
     if (!docContent || !feature) return
+    if (docType === 'pdf') {
+      const anchor = document.createElement('a')
+      anchor.href = docContent
+      anchor.download = `${feature.id}.pdf`
+      anchor.rel = 'noopener'
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      return
+    }
     downloadTextFile(`${feature.id}.md`, docContent, 'text/markdown;charset=utf-8')
   }
 
@@ -113,7 +123,8 @@ export default function FeatureReviewsPage() {
               tab={tab}
               setTab={setTab}
               canDownloadDoc={canDownloadDoc}
-              handleDownloadMd={handleDownloadMd}
+              handleDownloadDoc={handleDownloadDoc}
+              docDownloadLabel={docType === 'pdf' ? 'Download .pdf' : 'Download .md'}
               handleDownloadMeta={handleDownloadMeta}
               prefersReducedMotion={!!prefersReducedMotion}
             />
@@ -125,7 +136,8 @@ export default function FeatureReviewsPage() {
               drawerOpen={drawerOpen}
               setDrawerOpen={setDrawerOpen}
               canDownloadDoc={canDownloadDoc}
-              handleDownloadMd={handleDownloadMd}
+              handleDownloadDoc={handleDownloadDoc}
+              docDownloadTitle={docType === 'pdf' ? 'Download PDF' : 'Download Markdown'}
               handleDownloadMeta={handleDownloadMeta}
               prefersReducedMotion={!!prefersReducedMotion}
             />
@@ -133,6 +145,7 @@ export default function FeatureReviewsPage() {
             <FeatureContentTabs
               activeId={activeId}
               docContent={docContent}
+              docType={docType}
               docMarkdownRootRef={docMarkdownRootRef}
               docScrollRef={docScrollRef}
               docStatus={docStatus}

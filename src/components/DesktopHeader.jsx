@@ -22,7 +22,8 @@ export default function DesktopHeader({
   tab,
   setTab,
   canDownloadDoc,
-  handleDownloadMd,
+  handleDownloadDoc,
+  docDownloadLabel,
   handleDownloadMeta,
   prefersReducedMotion,
 }) {
@@ -69,12 +70,12 @@ export default function DesktopHeader({
           <motion.button
             type="button"
             className={chromeDownloadPill}
-            onClick={handleDownloadMd}
+            onClick={handleDownloadDoc}
             disabled={!canDownloadDoc}
             whileHover={!prefersReducedMotion ? hoverChrome : undefined}
             whileTap={tapScale(!!prefersReducedMotion)}
           >
-            Download .md
+            {docDownloadLabel}
           </motion.button>
           {feature.meta ? (
             <motion.button

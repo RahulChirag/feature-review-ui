@@ -7,19 +7,22 @@ import { getFeatureDocumentById } from '../lib/featureRepository'
 export function useFeatureDocument(activeId) {
   const [docStatus, setDocStatus] = useState('idle')
   const [docContent, setDocContent] = useState(null)
+  const [docType, setDocType] = useState(null)
 
   useEffect(() => {
     if (!activeId) return
 
     setDocContent(null)
+    setDocType(null)
     setDocStatus('loading')
 
     let cancelled = false
 
     getFeatureDocumentById(activeId)
-      .then((content) => {
+      .then((doc) => {
         if (cancelled) return
-        setDocContent(content || null)
+        setDocType(doc?.type ?? null)
+        setDocContent(doc?.content || null)
         setDocStatus('ready')
       })
       .catch(() => {
@@ -34,6 +37,7 @@ export function useFeatureDocument(activeId) {
 
   return {
     docContent,
+    docType,
     docStatus,
     canDownloadDoc: docStatus === 'ready' && !!docContent,
   }

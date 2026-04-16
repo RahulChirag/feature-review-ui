@@ -102,11 +102,25 @@ const mdComponents = {
   ),
 }
 
-const DocViewer = forwardRef(function DocViewer({ content }, ref) {
+const DocViewer = forwardRef(function DocViewer({ content, contentType = 'markdown' }, ref) {
   if (!content) {
     return (
       <div className="px-6 py-8 text-sm text-on-surface-muted">
         No documentation file found for this feature.
+      </div>
+    )
+  }
+
+  if (contentType === 'pdf') {
+    return (
+      <div className="h-full w-full min-w-0 max-w-full p-0 text-on-surface">
+        <div ref={ref} className="doc-markdown-root flex h-full min-w-0 flex-col">
+          <iframe
+            src={content}
+            title="Feature documentation PDF"
+            className="h-full w-full border-0 bg-surface"
+          />
+        </div>
       </div>
     )
   }

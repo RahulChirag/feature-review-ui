@@ -11,7 +11,8 @@ export default function MobileHeader({
   drawerOpen,
   setDrawerOpen,
   canDownloadDoc,
-  handleDownloadMd,
+  handleDownloadDoc,
+  docDownloadTitle,
   handleDownloadMeta,
   prefersReducedMotion,
 }) {
@@ -42,12 +43,12 @@ export default function MobileHeader({
           <motion.button
             type="button"
             className={`${chromeIconActionSm} shrink-0`}
-            onClick={handleDownloadMd}
+            onClick={handleDownloadDoc}
             disabled={!canDownloadDoc}
-            title="Download Markdown"
+            title={docDownloadTitle}
             whileTap={tapScale(!!prefersReducedMotion)}
           >
-            <span className="sr-only">Download Markdown</span>
+            <span className="sr-only">{docDownloadTitle}</span>
             <DocIcon />
           </motion.button>
           <motion.button
