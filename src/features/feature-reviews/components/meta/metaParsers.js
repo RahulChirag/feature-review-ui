@@ -1,10 +1,25 @@
 export const strSort = (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })
 
+/**
+ * `apis_used` is usually a string[]. Some feature meta files use
+ * `{ internal: string[], external: string[] }` to separate app routes from third-party URLs.
+ */
+export function normalizeApisUsed(apisUsed) {
+  if (apisUsed == null) return []
+  if (Array.isArray(apisUsed)) return apisUsed
+  if (typeof apisUsed === 'object') {
+    const internal = apisUsed.internal
+    const external = apisUsed.external
+    return [...(Array.isArray(internal) ? internal : []), ...(Array.isArray(external) ? external : [])]
+  }
+  return []
+}
+
 export function sortMetaCollections(meta) {
   return {
     entry_points: [...(meta.entry_points ?? [])].sort(strSort),
     files_involved: [...(meta.files_involved ?? [])].sort(strSort),
-    apis_used: [...(meta.apis_used ?? [])].sort(strSort),
+    apis_used: [...normalizeApisUsed(meta.apis_used)].sort(strSort),
     db_operations: [...(meta.db_operations ?? [])].sort(strSort),
     functions_traced: meta.functions_traced ?? [],
   }
@@ -14,7 +29,7 @@ export function buildMetaStats(meta) {
   return [
     { key: 'files', label: 'Files', icon: '📁', value: meta.files_involved?.length ?? 0, valueClass: 'text-primary' },
     { key: 'entry', label: 'Entry Points', icon: '🚀', value: meta.entry_points?.length ?? 0, valueClass: 'text-primary' },
-    { key: 'api', label: 'External APIs', icon: '🔌', value: meta.apis_used?.length ?? 0, valueClass: 'text-primary' },
+    { key: 'api', label: 'External APIs', icon: '🔌', value: normalizeApisUsed(meta.apis_used).length, valueClass: 'text-primary' },
     { key: 'db', label: 'DB Operations', icon: '🗄️', value: meta.db_operations?.length ?? 0, valueClass: 'text-primary' },
     { key: 'fn', label: 'Functions', icon: '⚙️', value: meta.functions_traced?.length ?? 0, valueClass: 'text-primary' },
   ]
