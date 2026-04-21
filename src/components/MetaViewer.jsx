@@ -10,13 +10,42 @@ import {
   buildMetaStats,
   sortMetaCollections,
 } from '../features/feature-reviews/components/meta/metaParsers'
+import { normalizeFeatureMeta } from '../features/feature-reviews/lib/featureMetaNormalizer'
 
 const EMPTY_META = {}
 
-const MetaViewer = forwardRef(function MetaViewer({ meta }, ref) {
+function ExtraMetaSection({ sections }) {
+  if (sections.length === 0) return null
+
+  return (
+    <section className="rounded-lg border border-outline bg-surface-container px-4 py-3 md:px-5">
+      <div className="flex items-center justify-between text-left">
+        <span className="text-sm font-semibold text-on-surface">Additional metadata</span>
+        <span className="text-xs text-on-surface-variant">{sections.length} sections</span>
+      </div>
+      <div className="mt-3 space-y-3">
+        {sections.map((section) => (
+          <div key={section.key} className="rounded-md border border-outline-variant px-3 py-2">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+              {section.label}
+            </h4>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-on-surface">
+              {section.items.map((item, index) => (
+                <li key={`${section.key}-${index}`}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const MetaViewer = forwardRef(function MetaViewer({ featureId, issues = [], meta }, ref) {
   const safeMeta = meta ?? EMPTY_META
+  const normalized = useMemo(() => normalizeFeatureMeta(safeMeta), [safeMeta])
   const sorted = useMemo(() => sortMetaCollections(safeMeta), [safeMeta])
-  const stats = useMemo(() => buildMetaStats(safeMeta), [safeMeta])
+  const stats = useMemo(() => buildMetaStats(safeMeta, normalized), [safeMeta, normalized])
 
   if (!meta) {
     return (
@@ -24,7 +53,19 @@ const MetaViewer = forwardRef(function MetaViewer({ meta }, ref) {
         ref={ref}
         className={`rounded-lg border border-outline bg-surface-container px-6 py-8 text-sm ${chromeMutedText}`}
       >
-        No metadata file found for this feature.
+        <p>No metadata file found for this feature.</p>
+        {featureId && (
+          <p className="mt-2">
+            Expected metadata at <code>feature-reviews/{featureId}/meta.json</code>.
+          </p>
+        )}
+        {issues.length > 0 && (
+          <ul className="mt-2 ml-5 list-disc space-y-1">
+            {issues.map((issue) => (
+              <li key={issue}>{issue}</li>
+            ))}
+          </ul>
+        )}
       </div>
     )
   }
@@ -37,6 +78,7 @@ const MetaViewer = forwardRef(function MetaViewer({ meta }, ref) {
       <ExternalApisSection items={sorted.apis_used} />
       <DatabaseOperationsSection items={sorted.db_operations} />
       <FunctionTraceSection items={sorted.functions_traced} />
+      <ExtraMetaSection sections={normalized.extraSections} />
     </div>
   )
 })

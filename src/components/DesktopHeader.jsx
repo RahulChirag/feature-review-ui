@@ -59,9 +59,9 @@ export function DesktopHeaderTitleRow({
           animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
           transition={prefersReducedMotion ? { duration: 0 } : transitionTitleEnter}
         >
-          {formatFeatureName(feature.meta?.feature ?? feature.id)}
+          {formatFeatureName(feature.normalizedMeta?.title ?? feature.meta?.feature ?? feature.id)}
         </motion.h1>
-        {feature.meta?.generated_date && generatedDisplay.label && (
+        {feature.normalizedMeta?.generatedAt && generatedDisplay.label && (
           <p className={chromeMetadata}>
             Generated{' '}
             {generatedDisplay.iso ? (
@@ -135,7 +135,7 @@ export function DesktopHeaderTabNav({
         <MetaIcon />
         Metadata
         {feature.meta && (
-          <span className={chromeCountBadge}>{countMetaItems(feature.meta)}</span>
+          <span className={chromeCountBadge}>{countMetaItems(feature)}</span>
         )}
       </motion.button>
     </nav>

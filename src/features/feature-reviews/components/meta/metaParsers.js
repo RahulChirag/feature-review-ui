@@ -16,22 +16,42 @@ export function normalizeApisUsed(apisUsed) {
 }
 
 export function sortMetaCollections(meta) {
+  const files =
+    meta.files_involved ??
+    meta.files_analyzed ??
+    meta.files_referenced ??
+    []
+
   return {
     entry_points: [...(meta.entry_points ?? [])].sort(strSort),
-    files_involved: [...(meta.files_involved ?? [])].sort(strSort),
+    files_involved: [...files].sort(strSort),
     apis_used: [...normalizeApisUsed(meta.apis_used)].sort(strSort),
     db_operations: [...(meta.db_operations ?? [])].sort(strSort),
     functions_traced: meta.functions_traced ?? [],
   }
 }
 
-export function buildMetaStats(meta) {
+export function buildMetaStats(meta, normalizedMeta) {
+  const knownCount = normalizedMeta
+    ? normalizedMeta.knownSections.reduce((sum, section) => sum + section.items.length, 0)
+    : 0
+  const extraCount = normalizedMeta
+    ? normalizedMeta.extraSections.reduce((sum, section) => sum + section.items.length, 0)
+    : 0
+  const files =
+    meta.files_involved ??
+    meta.files_analyzed ??
+    meta.files_referenced ??
+    []
+
   return [
-    { key: 'files', label: 'Files', icon: '📁', value: meta.files_involved?.length ?? 0, valueClass: 'text-primary' },
+    { key: 'files', label: 'Files', icon: '📁', value: files.length ?? 0, valueClass: 'text-primary' },
     { key: 'entry', label: 'Entry Points', icon: '🚀', value: meta.entry_points?.length ?? 0, valueClass: 'text-primary' },
     { key: 'api', label: 'External APIs', icon: '🔌', value: normalizeApisUsed(meta.apis_used).length, valueClass: 'text-primary' },
     { key: 'db', label: 'DB Operations', icon: '🗄️', value: meta.db_operations?.length ?? 0, valueClass: 'text-primary' },
     { key: 'fn', label: 'Functions', icon: '⚙️', value: meta.functions_traced?.length ?? 0, valueClass: 'text-primary' },
+    { key: 'known', label: 'Core Items', icon: '✅', value: knownCount, valueClass: 'text-primary' },
+    { key: 'extra', label: 'Extra Items', icon: '➕', value: extraCount, valueClass: 'text-on-surface-variant' },
   ]
 }
 

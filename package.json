@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "validate:reviews": "node scripts/validate-feature-reviews.mjs",
     "build": "vite build",
+    "build:ci": "npm run validate:reviews && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",

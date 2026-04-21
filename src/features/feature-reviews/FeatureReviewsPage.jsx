@@ -17,7 +17,7 @@ import {
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { useMobileDrawerSwipe } from '../../hooks/useMobileDrawerSwipe'
 import { FEATURE_RAIL_WIDTH_PX } from '../../theme/layoutTokens'
-import { transitionDesktopSidebar, transitionReducedOpacity } from '../../theme/motionTokens'
+import { transitionDesktopSidebar } from '../../theme/motionTokens'
 import { downloadTextFile } from '../../utils/downloadUtils'
 import { useFeatureDocument } from './hooks/useFeatureDocument'
 import { useFeatureSelection } from './hooks/useFeatureSelection'
@@ -75,8 +75,8 @@ export default function FeatureReviewsPage() {
   }, [activeId])
 
   const generatedDisplay = useMemo(
-    () => formatGeneratedDateForDisplay(feature?.meta?.generated_date),
-    [feature?.meta?.generated_date]
+    () => formatGeneratedDateForDisplay(feature?.normalizedMeta?.generatedAt ?? feature?.meta?.generated_date),
+    [feature?.normalizedMeta?.generatedAt, feature?.meta?.generated_date]
   )
 
   function handleSelectFeature(id) {

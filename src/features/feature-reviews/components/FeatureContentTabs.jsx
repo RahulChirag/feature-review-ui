@@ -13,7 +13,7 @@ import { countMetaItems } from '../lib/metaUtils'
 const DocViewer = lazy(() => import('../../../components/DocViewer'))
 
 const MOBILE_NAV_H_PX = 56
-const MOBILE_NAV_CLEARANCE_PX = 72
+const MOBILE_NAV_EXTRA_CLEARANCE_PX = 16
 
 function mobileTabClass(active) {
   return `relative flex h-14 min-h-[56px] flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 border-t-2 py-1 text-[11px] font-semibold leading-tight motion-safe:transition-colors ${focusRingButton} ${
@@ -38,6 +38,9 @@ export default function FeatureContentTabs({
   setTab,
   tab,
 }) {
+  const mobileNavHeight = `calc(${MOBILE_NAV_H_PX}px + env(safe-area-inset-bottom, 0px))`
+  const mobileContentBottomPadding = `calc(${MOBILE_NAV_H_PX + MOBILE_NAV_EXTRA_CLEARANCE_PX}px + env(safe-area-inset-bottom, 0px))`
+
   return (
     <>
       <div className="relative min-h-0 flex-1 overflow-hidden">
@@ -50,12 +53,12 @@ export default function FeatureContentTabs({
           <div
             ref={docScrollRef}
             className={`h-full min-h-0 min-w-0 flex-1 overflow-x-hidden scroll-smooth ${
-              docType === 'pdf' ? 'overflow-y-hidden' : 'overflow-y-auto overscroll-y-contain'
+              docType === 'pdf' ? 'overflow-y-auto overscroll-y-contain' : 'overflow-y-auto overscroll-y-contain'
             }`}
             style={
               isMobile
                 ? {
-                    paddingBottom: `calc(${MOBILE_NAV_CLEARANCE_PX}px + env(safe-area-inset-bottom, 0px))`,
+                    paddingBottom: mobileContentBottomPadding,
                   }
                 : undefined
             }
@@ -70,7 +73,7 @@ export default function FeatureContentTabs({
               ) : (
                 <motion.div
                   key={activeId}
-                  className="h-full w-full min-w-0"
+                  className={`w-full min-w-0 ${docType === 'pdf' ? 'h-[calc(100%-8px)]' : 'h-full'}`}
                   initial={
                     prefersReducedMotion
                       ? false
@@ -79,7 +82,13 @@ export default function FeatureContentTabs({
                   animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
                   transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
                 >
-                  <DocViewer ref={docMarkdownRootRef} content={docContent} contentType={docType} />
+                  <DocViewer
+                    ref={docMarkdownRootRef}
+                    content={docContent}
+                    contentType={docType}
+                    featureId={feature.id}
+                    issues={feature.issues ?? []}
+                  />
                 </motion.div>
               )}
             </Suspense>
@@ -104,7 +113,7 @@ export default function FeatureContentTabs({
             style={
               isMobile
                 ? {
-                    paddingBottom: `calc(${MOBILE_NAV_CLEARANCE_PX}px + env(safe-area-inset-bottom, 0px))`,
+                    paddingBottom: mobileContentBottomPadding,
                   }
                 : undefined
             }
@@ -120,7 +129,12 @@ export default function FeatureContentTabs({
               animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
               transition={prefersReducedMotion ? { duration: 0 } : transitionContentEnter}
             >
-              <MetaViewer ref={metaRootRef} meta={feature.meta} />
+              <MetaViewer
+                ref={metaRootRef}
+                meta={feature.meta}
+                featureId={feature.id}
+                issues={feature.issues ?? []}
+              />
             </motion.div>
           </div>
           <MetaOutline
@@ -134,8 +148,8 @@ export default function FeatureContentTabs({
 
       {isMobile && (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-40 flex h-[calc(56px+env(safe-area-inset-bottom,0px))] border-t border-outline bg-surface-container/95 shadow-[var(--shadow-nav)] backdrop-blur-md supports-[backdrop-filter]:bg-surface-container/90"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-outline bg-surface-container/95 shadow-[var(--shadow-nav)] backdrop-blur-md supports-[backdrop-filter]:bg-surface-container/90"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)', height: mobileNavHeight }}
           aria-label="Documentation and metadata"
         >
           <motion.button
@@ -157,7 +171,7 @@ export default function FeatureContentTabs({
           >
             <MetaIcon />
             <span>Meta</span>
-            {feature.meta && <span className={chromeCountBadge}>{countMetaItems(feature.meta)}</span>}
+            {feature.meta && <span className={chromeCountBadge}>{countMetaItems(feature)}</span>}
           </motion.button>
         </nav>
       )}

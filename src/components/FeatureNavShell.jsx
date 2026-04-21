@@ -44,6 +44,12 @@ const DOC_GROUP_TONE = {
     chevron: 'text-on-surface-muted',
     count: 'bg-surface-container-high text-on-surface-variant',
   },
+  invalid: {
+    header: 'bg-error/15 text-error hover:bg-error/20',
+    accentBar: 'bg-error',
+    chevron: 'text-error',
+    count: 'bg-error/20 text-error',
+  },
 }
 
 function SearchIcon() {
@@ -97,14 +103,21 @@ function FeatureRow({ f, active, index, onSelect, prefersReducedMotion }) {
           <span className="h-1.5 w-1.5 rounded-full bg-on-surface-variant/50 opacity-60" />
         )}
       </span>
-      <span className="min-w-0 flex-1 truncate">{formatFeatureName(f.meta?.feature ?? f.id)}</span>
+      <span className="min-w-0 flex-1 truncate">
+        {formatFeatureName(f.normalizedMeta?.title ?? f.meta?.feature ?? f.id)}
+      </span>
+      {f.docKind === 'invalid' && (
+        <span className="rounded-full bg-error/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-error">
+          Fix
+        </span>
+      )}
       {f.meta && (
         <span
           className={`${chromeCountBadgeRailList} ${
             active ? chromeCountBadgeRailActive : chromeCountBadgeRailMuted
           }`}
         >
-          {(f.meta.files_involved?.length ?? 0)}f
+          {(f.normalizedMeta?.files?.length ?? 0)}f
         </span>
       )}
     </motion.button>
@@ -240,11 +253,12 @@ export function FeatureNavRailBody({
   const showClear = query.length > 0
   const prefersReducedMotion = useReducedMotion()
 
-  const { markdownFeatures, pdfFeatures, otherFeatures } = useMemo(() => {
+  const { invalidFeatures, markdownFeatures, pdfFeatures, otherFeatures } = useMemo(() => {
+    const invalidFeatures = features.filter((f) => f.docKind === 'invalid')
     const markdownFeatures = features.filter((f) => f.docKind === 'markdown')
     const pdfFeatures = features.filter((f) => f.docKind === 'pdf')
     const otherFeatures = features.filter((f) => f.docKind === 'none')
-    return { markdownFeatures, pdfFeatures, otherFeatures }
+    return { invalidFeatures, markdownFeatures, pdfFeatures, otherFeatures }
   }, [features])
 
   return (
@@ -304,10 +318,21 @@ export function FeatureNavRailBody({
               </div>
             ) : features.length === 0 ? (
               <div className="px-2.5 py-3 text-xs leading-relaxed text-on-surface-muted">
-                No features match your filter
+                No features match your filter `{query}`.
               </div>
             ) : (
               <>
+                <CollapsibleDocGroup
+                  id="sidebar-invalid"
+                  title="Needs attention"
+                  tone="invalid"
+                  items={invalidFeatures}
+                  activeId={activeId}
+                  onSelect={onSelect}
+                  prefersReducedMotion={prefersReducedMotion}
+                  defaultOpen
+                  startIndex={0}
+                />
                 <CollapsibleDocGroup
                   id="sidebar-md"
                   title="Markdown"
@@ -316,7 +341,7 @@ export function FeatureNavRailBody({
                   activeId={activeId}
                   onSelect={onSelect}
                   prefersReducedMotion={prefersReducedMotion}
-                  startIndex={0}
+                  startIndex={invalidFeatures.length}
                 />
                 <CollapsibleDocGroup
                   id="sidebar-pdf"
@@ -326,7 +351,7 @@ export function FeatureNavRailBody({
                   activeId={activeId}
                   onSelect={onSelect}
                   prefersReducedMotion={prefersReducedMotion}
-                  startIndex={markdownFeatures.length}
+                  startIndex={invalidFeatures.length + markdownFeatures.length}
                 />
                 <CollapsibleDocGroup
                   id="sidebar-other"
@@ -336,7 +361,7 @@ export function FeatureNavRailBody({
                   activeId={activeId}
                   onSelect={onSelect}
                   prefersReducedMotion={prefersReducedMotion}
-                  startIndex={markdownFeatures.length + pdfFeatures.length}
+                  startIndex={invalidFeatures.length + markdownFeatures.length + pdfFeatures.length}
                 />
               </>
             )}

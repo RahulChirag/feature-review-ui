@@ -5,7 +5,7 @@ import { formatFeatureName } from './featureFormatters'
  * @returns {number | null}
  */
 export function parseGeneratedDate(meta) {
-  const raw = meta?.generated_date
+  const raw = meta?.normalizedMeta?.generatedAt ?? meta?.generated_date
   if (raw == null || raw === '') return null
 
   const timestamp = Date.parse(String(raw))
@@ -31,7 +31,7 @@ export function filterFeatures(features, query) {
   if (!normalizedQuery) return features
 
   return features.filter((feature) => {
-    const label = formatFeatureName(feature.meta?.feature ?? feature.id).toLowerCase()
+    const label = formatFeatureName(feature.normalizedMeta?.title ?? feature.meta?.feature ?? feature.id).toLowerCase()
     const id = feature.id.toLowerCase()
     return label.includes(normalizedQuery) || id.includes(normalizedQuery)
   })

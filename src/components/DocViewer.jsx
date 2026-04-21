@@ -102,11 +102,23 @@ const mdComponents = {
   ),
 }
 
-const DocViewer = forwardRef(function DocViewer({ content, contentType = 'markdown' }, ref) {
+const DocViewer = forwardRef(function DocViewer({ content, contentType = 'markdown', featureId, issues = [] }, ref) {
   if (!content) {
     return (
-      <div className="px-6 py-8 text-sm text-on-surface-muted">
-        No documentation file found for this feature.
+      <div className="space-y-3 px-6 py-8 text-sm text-on-surface-muted">
+        <p>No documentation file found for this feature.</p>
+        {featureId && (
+          <p>
+            Expected a markdown or PDF file under <code>feature-reviews/{featureId}/</code>.
+          </p>
+        )}
+        {issues.length > 0 && (
+          <ul className="ml-5 list-disc space-y-1">
+            {issues.map((issue) => (
+              <li key={issue}>{issue}</li>
+            ))}
+          </ul>
+        )}
       </div>
     )
   }
