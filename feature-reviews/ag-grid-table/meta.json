@@ -1,0 +1,69 @@
+{
+  "feature": "ag-grid-table",
+  "analyzed_date": "2026-04-21",
+  "analyzed_branch": "feat/doc-intel-module-improvements",
+  "packages": {
+    "ag-grid-community": "^35.2.1 (resolved 35.2.1)",
+    "ag-grid-react": "^35.2.1"
+  },
+  "summary": "The frontend uses AG Grid Community (no Enterprise, no LicenseManager) across five surfaces: the Sites list (/sites, server-backed paging+sort), the Site Sync Runs sites list (reuses the Sites grid with a different Actions cell), the per-site Files list (client-side), the File Worker Management page (client-side with live in-flight refresh), and the Organization EDMS Providers grid (client-side, no footer pagination). There is no shared reusable grid component — each feature has its own *AgGridTable.jsx that follows an identical template (Quartz theme via JS API, AgGridProvider with a feature-local module list, suppressPaginationPanel + a custom DataTablePagination footer, column-defs in a sibling .js file, custom cell renderers in a .jsx file). Custom filters use useGridFilter (required in v35+). No global AG Grid CSS is imported.",
+  "files_referenced": [
+    "frontend/package.json",
+    "frontend/package-lock.json",
+    "frontend/src/App.jsx",
+    "frontend/src/pages/SitesAgGrid/SitesAgGridPage.jsx",
+    "frontend/src/pages/SitesAgGrid/agGridModules.js",
+    "frontend/src/pages/SitesAgGrid/hooks/useSitesAgGridPage.js",
+    "frontend/src/pages/SitesAgGrid/components/SitesAgGridTable.jsx",
+    "frontend/src/pages/SitesAgGrid/components/sitesAgGridColumnDefs.js",
+    "frontend/src/pages/SitesAgGrid/components/SitesAgGridActionsCell.jsx",
+    "frontend/src/pages/SitesAgGrid/components/SitesAgGridStatusCell.jsx",
+    "frontend/src/pages/SitesAgGrid/components/SitesAgGridCategorySelectFilter.jsx",
+    "frontend/src/pages/SitesAgGrid/components/SitesAgGridFilterDateInput.jsx",
+    "frontend/src/pages/SitesAgGrid/components/SitesAgGridToolbar.jsx",
+    "frontend/src/pages/SitesAgGrid/components/sitesAgGridFilterChips.js",
+    "frontend/src/pages/SharePointManagement/SharePoint_Sync_Run/SharePointSyncRun.jsx",
+    "frontend/src/pages/SharePointManagement/SharePoint_Sync_Run/hooks/useSiteSyncRunsPage.js",
+    "frontend/src/pages/SharePointManagement/Document_Files_Process/filesAgGridModules.js",
+    "frontend/src/pages/SharePointManagement/Document_Files_Process/components/FilesAgGridTable.jsx",
+    "frontend/src/pages/SharePointManagement/Document_Files_Process/components/filesAgGridColumnDefs.js",
+    "frontend/src/pages/SharePointManagement/Document_Files_Process/components/FilesAgGridCells.jsx",
+    "frontend/src/pages/SharePointManagement/Document_Files_Process/components/FilesEnumSelectFilter.jsx",
+    "frontend/src/pages/SharePointManagement/Document_Files_Process/components/SiteFilesMasterDetail.jsx",
+    "frontend/src/pages/SharePointManagement/Worker_Management/WorkerManagement.jsx",
+    "frontend/src/pages/SharePointManagement/Worker_Management/workerAgGridModules.js",
+    "frontend/src/pages/SharePointManagement/Worker_Management/components/WorkerAgGridTable.jsx",
+    "frontend/src/pages/SharePointManagement/Worker_Management/components/workerAgGridColumnDefs.js",
+    "frontend/src/pages/SharePointManagement/Worker_Management/components/WorkerAgGridCells.jsx",
+    "frontend/src/pages/SharePointManagement/Worker_Management/components/index.js",
+    "frontend/src/pages/DocumentIntelligence/EDMS_Providers/OrgEdmsProviders.jsx",
+    "frontend/src/pages/DocumentIntelligence/EDMS_Providers/OrgEdmsProvidersAgGrid.jsx",
+    "frontend/src/pages/DocumentIntelligence/EDMS_Providers/OrgEdmsProvidersActionsCell.jsx"
+  ],
+  "entry_points": [
+    "/sites -> frontend/src/pages/SitesAgGrid/SitesAgGridPage.jsx",
+    "/site-sync-runs -> frontend/src/pages/SharePointManagement/SharePoint_Sync_Run/SharePointSyncRun.jsx (sites list reuses SitesAgGridTable)",
+    "/worker-management -> frontend/src/pages/SharePointManagement/Worker_Management/WorkerManagement.jsx",
+    "Org EDMS Providers -> frontend/src/pages/DocumentIntelligence/EDMS_Providers/OrgEdmsProviders.jsx",
+    "Files list (embedded) -> frontend/src/pages/SharePointManagement/Document_Files_Process/components/SiteFilesMasterDetail.jsx"
+  ],
+  "ag_grid_modules_registered_per_feature": {
+    "sites": ["LocaleModule", "ClientSideRowModelModule", "ClientSideRowModelApiModule", "ColumnApiModule", "ColumnAutoSizeModule", "CustomFilterModule", "DateFilterModule", "RowApiModule", "ScrollApiModule", "CellApiModule", "CellStyleModule", "ValueCacheModule", "RenderApiModule", "EventApiModule", "PaginationModule", "GridStateModule", "TooltipModule", "TextFilterModule"],
+    "files": "sites list + NumberFilterModule",
+    "worker": "same as sites list",
+    "org_edms": "reuses sitesAgGridCommunityModules import"
+  },
+  "theming": "themeQuartz.withPart(colorSchemeDark | colorSchemeLightCold) via the ag-grid-community JS theming API. Dark-mode tracked by an inline useHtmlClassContains('dark') MutationObserver hook duplicated in each grid file. No ag-theme-* CSS is imported.",
+  "licensing": "No AG Grid Enterprise license. Grep for 'LicenseManager' returned zero matches. Only ag-grid-community and ag-grid-react are installed.",
+  "conventions": [
+    "Column defs live in a plain .js file (getXxxAgGridColumnDefs); cell renderers live in a sibling .jsx file so React Fast Refresh stays happy",
+    "A XXX_AG_GRID_SORTABLE_COL_IDS / SERVER_SORT_COL_IDS array declares which colIds are allowed to sort; onSortChanged snaps disallowed sorts back to the feature-specific default",
+    "Custom React filters register logic via useGridFilter({ doesFilterPass, getModelAsString, afterGuiAttached })",
+    "filterParams: { buttons: ['apply', 'reset'], closeOnApply: true, debounceMs: 150 } is the project-wide convention",
+    "Custom footer pagination uses @/components/DataTable/DataTablePagination with pageSizeOptions [20, 50, 100, 200]; native AG Grid panel is hidden via suppressPaginationPanel",
+    "Action cells use forwardRef + useImperativeHandle({ refresh: () => true }) and receive handlers via colDef.cellRendererParams",
+    "Grid wrapper uses enableCellTextSelection + suppressCellFocus + domLayout='normal' + headerHeight=36",
+    "Tailwind arbitrary selectors on the wrapper left-align header text: [&_.ag-header-cell-label]:justify-start [&_.ag-header-cell-text]:text-left"
+  ],
+  "description": "AG Grid Community is used as the primary data-table on Sites, Site Sync Runs, per-site Files, File Worker Management, and Organization EDMS Providers screens. Each feature registers its own module list through AgGridProvider and reuses a shared pattern (Quartz theming, custom DataTablePagination footer, useGridFilter-based custom filters, column-defs in plain JS with cell renderers in a sibling JSX file). The Sites grid is the only one that another feature (Site Sync Runs) re-imports directly."
+}
