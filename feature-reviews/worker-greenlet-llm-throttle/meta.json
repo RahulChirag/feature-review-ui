@@ -1,0 +1,38 @@
+{
+  "feature": "worker-greenlet-llm-throttle",
+  "generated_date": "2026-04-22",
+  "files_involved": [
+    "backend/app/config/database_sqlalchemy.py",
+    "backend/app/services/file_processing_worker_service.py",
+    "backend/app/services/business_context_enrichment_service.py",
+    "backend/app/config/settings.py",
+    "backend/app/config/settings.sklsiprod.json",
+    "backend/app/config/settings.local.json",
+    "backend/tests/test_async_session_factory.py",
+    "backend/tests/test_process_batch_fresh_session.py",
+    "backend/tests/test_enrichment_throttle.py"
+  ],
+  "entry_points": [
+    "backend/app/services/file_processing_worker_service.py -> process_batch() (scheduled by APScheduler file_processor job)",
+    "backend/app/services/business_context_enrichment_service.py -> enrich_document_metadata() (called during file indexing)"
+  ],
+  "apis_used": [
+    "Azure OpenAI chat completion via app.services.llm_chat_service.run_chat_completion (wrapped by _call_llm_with_retry)"
+  ],
+  "db_operations": [
+    "db.get(EDMSFileProcessing, file_id) per file in process_batch (file_processing_worker_service.py:3224)",
+    "self.claim_batch(batch_size) in process_batch (uses get_fresh_session at file_processing_worker_service.py:755)",
+    "_record_processing_stats via fresh session (file_processing_worker_service.py:3076)",
+    "load_active_taxonomy_for_tenant(db, tenant_id) in business_context_enrichment_service.py"
+  ],
+  "functions_traced": [
+    "async_session_factory (module-level) in backend/app/config/database_sqlalchemy.py",
+    "async_session() asynccontextmanager in backend/app/config/database_sqlalchemy.py",
+    "process_batch() in backend/app/services/file_processing_worker_service.py (line 3106)",
+    "_get_enrichment_semaphore() in backend/app/services/business_context_enrichment_service.py (line 59)",
+    "_call_llm_with_retry() in backend/app/services/business_context_enrichment_service.py (line 67)",
+    "_run_unified_enrichment() LLM call site in backend/app/services/business_context_enrichment_service.py (lines 452-477)",
+    "enrich_document_metadata() in backend/app/services/business_context_enrichment_service.py (line 486)"
+  ],
+  "description": "Stabilizes the batch file-processing worker by using async_sessionmaker and opening a fresh per-file database session, and makes LLM enrichment resilient under load via a process-wide asyncio semaphore plus tenacity retry with exponential backoff on 429/timeout/connection errors; SKLSI worker timing values are aligned with PDMI's tuned config."
+}
