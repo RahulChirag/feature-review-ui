@@ -1,0 +1,110 @@
+{
+  "feature": "admin-unified-auth",
+  "generated_date": "2026-05-25",
+  "author_email": "rahulrayala737@gmail.com",
+  "description": "Dual-parallel authentication for R-NeuroIQ-Admin-Portal: when USE_AUTH_SERVICE is enabled, the Admin backend accepts NeuroIQ Auth Service cookies (neuroiq_at / neuroiq_rt) via neuroiq_auth_lib JWKS validation while preserving legacy Admin HS256 cookies (access_token / refresh_token) from /api/auth/login and MSAL. Home (R-NeuroIQ-Home) issues unified cookies through Auth Service; Admin frontend proxies /auth to Auth Service for refresh/logout and redirects sign-out to HOME_APP_URL/login.",
+  "files_analyzed": [
+    "R-NeuroIQ-Admin-Portal/backend/app/config/auth_integration.py",
+    "R-NeuroIQ-Admin-Portal/backend/app/core/dependencies.py",
+    "R-NeuroIQ-Admin-Portal/backend/app/main.py",
+    "R-NeuroIQ-Admin-Portal/backend/app/routes/auth.py",
+    "R-NeuroIQ-Admin-Portal/backend/app/services/auth_service.py",
+    "R-NeuroIQ-Admin-Portal/backend/app/config/jwt.py",
+    "R-NeuroIQ-Admin-Portal/backend/requirements.in",
+    "R-NeuroIQ-Admin-Portal/frontend/vite.config.js",
+    "R-NeuroIQ-Admin-Portal/frontend/src/config/runtimeConfig.js",
+    "R-NeuroIQ-Admin-Portal/frontend/src/api/axios.js",
+    "R-NeuroIQ-Admin-Portal/frontend/src/api/authServiceClient.js",
+    "R-NeuroIQ-Admin-Portal/frontend/src/services/authService.js",
+    "R-NeuroIQ-Admin-Portal/frontend/src/contexts/AuthContext.jsx",
+    "R-NeuroIQ-Admin-Portal/frontend/src/pages/Login.jsx",
+    "R-NeuroIQ-Admin-Portal/frontend/src/components/ProtectedRoute.jsx",
+    "R-NeuroIQ-Admin-Portal/.env.example",
+    "R-NeuroIQ-Auth-Service/app/routers/auth.py",
+    "R-NeuroIQ-Auth-Service/app/services/token_service.py",
+    "R-NeuroIQ-Auth-Service/neuroiq_auth_lib/validator.py",
+    "R-NeuroIQ-Auth-Service/neuroiq_auth_lib/jwks_cache.py",
+    "R-NeuroIQ-Home/src/api/axios.ts",
+    "R-NeuroIQ-Home/src/api/auth.ts",
+    "R-NeuroIQ-Home/vite.config.ts"
+  ],
+  "entry_points": [
+    "Home: POST /auth/db-login via R-NeuroIQ-Home DbLoginForm -> Auth Service sets neuroiq_at",
+    "Home: GET /auth/app-launcher/apps -> user clicks Admin Portal card",
+    "Admin frontend: GET /api/auth/me on load (AuthContext.fetchCurrentUser)",
+    "Admin frontend: POST /api/auth/login (legacy email login)",
+    "Admin frontend: POST /api/auth/azure-login (MSAL legacy)",
+    "Admin frontend: Sign in via NeuroIQ Home link on Login.jsx",
+    "Admin frontend: logout in AuthContext -> authService.logout + redirect HOME_APP_URL/login"
+  ],
+  "apis_used": {
+    "internal_admin": [
+      "GET /api/auth/me",
+      "POST /api/auth/login",
+      "POST /api/auth/refresh",
+      "POST /api/auth/logout",
+      "POST /api/auth/azure-login"
+    ],
+    "internal_auth_service_via_proxy": [
+      "POST /auth/refresh",
+      "POST /auth/logout"
+    ],
+    "auth_service_direct": [
+      "POST /auth/db-login",
+      "POST /auth/refresh",
+      "POST /auth/logout",
+      "GET /auth/me",
+      "GET /auth/.well-known/jwks.json",
+      "GET /auth/app-launcher/apps"
+    ],
+    "home_direct": [
+      "GET /auth/idp-providers",
+      "POST /auth/db-login",
+      "GET /auth/app-launcher/apps"
+    ]
+  },
+  "db_operations": [
+    "User SELECT by id in UserService.get() after JWT sub claim resolved (Admin Portal)",
+    "UserSession insert/update in Auth Service session_service on login/refresh (Auth Service repo)",
+    "RBAC permission checks unchanged via RBACService.user_has_permission (Admin Portal)"
+  ],
+  "functions_traced": [
+    "use_auth_service() in R-NeuroIQ-Admin-Portal/backend/app/config/auth_integration.py",
+    "_get_user_from_neuroiq_token() in backend/app/core/dependencies.py",
+    "_get_user_from_legacy_token() in backend/app/core/dependencies.py",
+    "get_current_user() in backend/app/core/dependencies.py",
+    "lifespan JWKS configure in R-NeuroIQ-Admin-Portal/backend/app/main.py",
+    "get_me() in R-NeuroIQ-Admin-Portal/backend/app/routes/auth.py",
+    "AuthService.login/get_current_user in backend/app/services/auth_service.py",
+    "validate_neuroiq_token() in R-NeuroIQ-Auth-Service/neuroiq_auth_lib/validator.py",
+    "issue_access_token() in R-NeuroIQ-Auth-Service/app/services/token_service.py",
+    "db_login() in R-NeuroIQ-Auth-Service/app/routers/auth.py",
+    "refresh_token() in R-NeuroIQ-Auth-Service/app/routers/auth.py",
+    "tryRefreshTokens() in R-NeuroIQ-Admin-Portal/frontend/src/api/axios.js",
+    "logout() in R-NeuroIQ-Admin-Portal/frontend/src/contexts/AuthContext.jsx",
+    "resolveUseAuthService() in R-NeuroIQ-Admin-Portal/frontend/src/config/runtimeConfig.js"
+  ],
+  "external_integrations": [
+    "NeuroIQ Auth Service JWKS endpoint for RS256 JWT verification",
+    "Microsoft MSAL (legacy Admin azure-login path only)"
+  ],
+  "cookie_families": {
+    "unified": ["neuroiq_at", "neuroiq_rt"],
+    "legacy_admin": ["access_token", "refresh_token"]
+  },
+  "env_vars_required": [
+    "USE_AUTH_SERVICE",
+    "VITE_USE_AUTH_SERVICE",
+    "AUTH_SERVICE_URL",
+    "AUTH_SERVICE_ISSUER",
+    "HOME_APP_URL",
+    "VITE_AUTH_SERVICE_URL",
+    "VITE_HOME_APP_URL"
+  ],
+  "repos_involved": [
+    "R-NeuroIQ-Admin-Portal",
+    "R-NeuroIQ-Auth-Service",
+    "R-NeuroIQ-Home"
+  ],
+  "feature_complexity": "Medium"
+}
