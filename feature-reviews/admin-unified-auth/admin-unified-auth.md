@@ -1,13 +1,15 @@
 # Feature Explanation: Admin Portal Unified Auth
 
 > Generated from actual code analysis. No assumptions made.
-> Date: 2026-05-25
+> Date: 2026-05-27
 
 ---
 
 ## What is this feature?
 
-**Admin Portal Unified Auth** lets NeuroIQ Admin accept the **same login session as NeuroIQ Home** when `USE_AUTH_SERVICE=true`. Users sign in on Home (or via Auth Service); Auth Service sets HttpOnly cookies `neuroiq_at` and `neuroiq_rt`. Admin API validates `neuroiq_at` with **RS256 + JWKS** (via `neuroiq_auth_lib`), then loads the user from the **shared Admin database** by JWT `sub` (user id). Legacy Admin login (`/api/auth/login`, MSAL) remains available in parallel with **HS256** cookies `access_token` / `refresh_token`.
+**Admin Portal Unified Auth** lets NeuroIQ Admin accept the **same login session as NeuroIQ Home** when `USE_AUTH_SERVICE=true`. Users sign in on Home via **email/password** (`POST /auth/db-login`) or via an **IdP button** (e.g. Azure AD: full-page navigation to Auth Service `GET /auth/login/{provider_key}` → OIDC callback). Auth Service sets HttpOnly cookies `neuroiq_at` and `neuroiq_rt` for both paths. Admin API validates `neuroiq_at` with **RS256 + JWKS** (via `neuroiq_auth_lib`), then loads the user from the **shared Admin database** by JWT `sub` (user id). Legacy Admin login (`/api/auth/login`, MSAL) remains available in parallel with **HS256** cookies `access_token` / `refresh_token`.
+
+Home does **not** use `@azure/msal-browser` for the IdP button flow; it calls Auth Service HTTP routes only.
 
 When the flag is **off**, behavior is unchanged: Admin-only cookies and Admin-only refresh.
 
@@ -58,8 +60,18 @@ Resolution order in `get_current_user`: **neuroiq first** (if flag on), then leg
 ### Home
 
 - `postDBLogin` → Auth Service `/auth/db-login`.
+- `getIDPProviders` / `buildIDPLoginUrl` → IdP buttons on `LoginPage` (Azure AD uses `provider_key` from registry, commonly `azure_ad`).
+- In dev, Vite proxies `/auth` to `VITE_AUTH_SERVICE_URL`; `buildIDPLoginUrl` uses the same env var for full-page login navigation.
 - Axios interceptor refreshes via `/auth/refresh` on 401.
 - Launcher loads apps from `/auth/app-launcher/apps`; Admin card URL should point to local Admin (e.g. `http://localhost:5173`) with `open_in_new_tab=0` for same-tab navigation.
+
+### Auth Service (IdP / Azure OIDC)
+
+- `GET /auth/idp-providers` — list from in-memory registry (`get_providers_for_login()`).
+- `GET /auth/login/{provider_key}` — OIDC Authorization Code + PKCE; stores state in Redis when `request.app.state.redis` is set.
+- `GET /auth/callback/{provider_key}` — code exchange, `find_or_provision_user`, session, `neuroiq_at` / `neuroiq_rt`.
+- `AzureADProvider` — OIDC via Authlib; `provider_user_id` from JWT `oid` (fallback `sub`).
+- Registry `load_registry()` — loads enabled `organization_identity_providers` rows at startup.
 
 ---
 

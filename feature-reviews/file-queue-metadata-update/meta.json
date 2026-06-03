@@ -1,0 +1,71 @@
+{
+  "feature": "file-queue-metadata-update",
+  "generated_date": "2026-06-03",
+  "author_email": "rahulrayala737@gmail.com",
+  "description": "Allows admins to edit document classification metadata (category, docType, sensitivityLabel, status, docOwner, department, region, businessUnit, retentionPolicy, language, tags, sourcefile) for indexed documents from the File Queue UI. Changes are persisted to Azure AI Search using a batched merge operation across all document chunks. A parallel non-fatal SQL rename also fires if the sourcefile name changed.",
+  "files_analyzed": [
+    "backend/app/routes/document_metadata.py",
+    "backend/app/services/search_metadata_manager.py",
+    "backend/app/schemas/document_metadata.py",
+    "frontend/src/services/documentMetadataService.js",
+    "frontend/src/pages/SharePointManagement/File_Queue/hooks/useFileQueueEditMetadata.js",
+    "frontend/src/pages/SharePointManagement/File_Queue/services/fileQueueDocumentActionsService.js",
+    "frontend/src/pages/SharePointManagement/File_Queue/components/FileQueueEditMetadataModal.jsx"
+  ],
+  "entry_points": [
+    "User clicks Save in FileQueueEditMetadataModal",
+    "handleSubmit() in useFileQueueEditMetadata.js fires onSubmitMetadata callback",
+    "fileQueueDocumentActionsService.updateDocumentMetadata() delegates to documentMetadataService",
+    "PATCH /api/document-metadata/documents/{parentDocumentId} hits FastAPI route",
+    "SearchMetadataManager.update_document_metadata() performs Azure Search batch merge"
+  ],
+  "apis_used": {
+    "internal_backend": [
+      "PATCH /api/document-metadata/documents/{parentDocumentId}",
+      "GET /api/document-metadata/documents/{parentDocumentId}",
+      "PATCH /api/file-queue/files/{fileRecordId}/rename"
+    ],
+    "external": [
+      "Azure AI Search SDK: SearchClient.search() — paginated chunk ID fetch",
+      "Azure AI Search SDK: SearchClient.merge_or_upload_documents() — batch field merge"
+    ]
+  },
+  "db_operations": [
+    "Azure AI Search: merge_or_upload_documents — patches metadata fields on all chunks of a document",
+    "SQL (parallel, non-fatal): UPDATE doc_intel_files_processing SET file_name WHERE id — display name rename only"
+  ],
+  "functions_traced": [
+    "handleSubmit() in useFileQueueEditMetadata.js",
+    "omitBlankValues() in useFileQueueEditMetadata.js",
+    "fileQueueDocumentActionsService.updateDocumentMetadata()",
+    "documentMetadataService.updateDocumentMetadata()",
+    "update_document_metadata() route in document_metadata.py",
+    "DocumentMetadataUpdateRequest.get_non_null_updates() in document_metadata.py schema",
+    "SearchMetadataManager.update_document_metadata() in search_metadata_manager.py",
+    "SearchClient.search() — paginated chunk ID fetch",
+    "SearchClient.merge_or_upload_documents() — Azure Search batch merge"
+  ],
+  "updatable_fields": [
+    "sourcefile",
+    "category",
+    "docType",
+    "sensitivityLabel",
+    "status",
+    "docOwner",
+    "department",
+    "region",
+    "businessUnit",
+    "retentionPolicy",
+    "language",
+    "tags"
+  ],
+  "key_design_decisions": [
+    "Azure Search is the metadata source of truth, not SQL",
+    "All chunks of a document are updated atomically in batches of 1000",
+    "@search.action merge ensures only provided fields are overwritten",
+    "Parallel Promise.all fires Azure update + SQL rename simultaneously",
+    "SQL rename is non-fatal: caught error does not block Azure update",
+    "Double null-stripping: frontend omitBlankValues + backend get_non_null_updates"
+  ],
+  "feature_complexity": "Medium"
+}

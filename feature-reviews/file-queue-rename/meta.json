@@ -1,0 +1,55 @@
+{
+  "feature": "file-queue-rename",
+  "generated_date": "2026-06-03",
+  "author_email": "rahulrayala737@gmail.com",
+  "description": "Renames the display file_name column on the EDMSFileProcessing SQL row from the File Queue UI Edit Metadata modal. This is a display-name-only change — it does not move the Azure blob or the SharePoint source file. The rename fires in parallel with the Azure Search metadata update (non-fatal: .catch() prevents it blocking the main update). The PATCH route delegates all DB work to FileQueueService.rename_file() which mutates the ORM object and commits, returning the previous name for audit/UI feedback.",
+  "files_analyzed": [
+    "backend/app/routes/file_queue.py",
+    "backend/app/services/file_queue_service.py",
+    "backend/app/schemas/edms_file_processing.py",
+    "backend/app/models/edms_file_processing.py",
+    "frontend/src/pages/SharePointManagement/File_Queue/hooks/useFileQueueEditMetadata.js",
+    "frontend/src/pages/SharePointManagement/File_Queue/services/fileQueueDocumentActionsService.js"
+  ],
+  "entry_points": [
+    "handleSubmit() in useFileQueueEditMetadata.js detects sourcefileChanged",
+    "fileQueueDocumentActionsService.renameFile(file.id, newSourcefile)",
+    "PATCH /api/file-queue/files/{fileRecordId}/rename",
+    "FileQueueService.rename_file(file_record_id, new_file_name)"
+  ],
+  "apis_used": {
+    "internal_backend": [
+      "PATCH /api/file-queue/files/{fileRecordId}/rename"
+    ]
+  },
+  "db_operations": [
+    "SELECT FROM doc_intel_files_processing WHERE id = file_record_id",
+    "UPDATE doc_intel_files_processing SET file_name = new_file_name WHERE id = file_record_id"
+  ],
+  "functions_traced": [
+    "handleSubmit() in useFileQueueEditMetadata.js",
+    "fileQueueDocumentActionsService.renameFile()",
+    "rename_file() route in file_queue.py",
+    "RenameFileRequest.strip_and_validate() field_validator",
+    "FileQueueService.rename_file() in file_queue_service.py"
+  ],
+  "schema_fields": {
+    "request": ["file_name"],
+    "response": ["success", "message", "file_record_id", "previous_name", "file_name"]
+  },
+  "error_handling": {
+    "frontend_non_fatal": "renameFile is wrapped in .catch() — failure is swallowed, does not block Azure Search update",
+    "route_404": "FileNotFoundError from service is caught and mapped to HTTPException(404)",
+    "route_422": "Pydantic min_length=1 rejects blank file_name before route runs",
+    "route_500": "Unexpected exceptions caught and raised as HTTPException(500)"
+  },
+  "key_design_decisions": [
+    "Display-name only — no blob or SharePoint rename",
+    "Non-fatal on frontend — .catch() prevents rename failure from blocking Azure update",
+    "FileNotFoundError not HTTPException in service — HTTP is route's concern",
+    "previous_name returned for UI feedback / potential undo",
+    "mode=before validator — whitespace stripped before min_length check",
+    "No explicit rollback — SQLAlchemy session lifecycle handles uncommitted changes on exception"
+  ],
+  "feature_complexity": "Low"
+}
